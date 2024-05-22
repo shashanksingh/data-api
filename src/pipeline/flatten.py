@@ -35,10 +35,9 @@ sections -> 'siteId' as site_id ,
 CASE {SUBQUERY}
             ELSE NULL
         END AS type_of_data
-from submission_timelines order by updated_at  desc limit 1;
+from submission_timelines order by updated_at  desc ;
 """
 
-print(QUERY)
 
 
 def get_data_from_db() -> pd.DataFrame:
