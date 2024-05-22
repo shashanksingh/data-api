@@ -5,11 +5,11 @@ import trino
 app = FastAPI()
 
 # Trino configuration
-TRINO_HOST = 'trino'
+TRINO_HOST = "trino"
 TRINO_PORT = 8080  # default port
-TRINO_USER = ''
-TRINO_CATALOG = 'jdbc'
-TRINO_SCHEMA = 'jdbc'
+TRINO_USER = ""
+TRINO_CATALOG = "jdbc"
+TRINO_SCHEMA = "jdbc"
 
 
 # Create a Trino connection
@@ -19,7 +19,7 @@ def get_trino_connection():
         port=TRINO_PORT,
         user=TRINO_USER,
         catalog=TRINO_CATALOG,
-        schema=TRINO_SCHEMA
+        schema=TRINO_SCHEMA,
     )
 
 
