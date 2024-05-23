@@ -3,25 +3,25 @@ import json
 import psycopg2 as pg
 
 TABLES_TO_CREATE = (
-    "fuel",
-    "protectedAreas",
-    "corruptionTraining",
-    "passengerVehicles",
-    "corporateDebtSecurities",
-    "general",
-    "renewableEnergyProduction",
-    "electricityUsage",
-    "staffCommuting",
-    "emissionsToWater",
+    # "fuel",
+    # "protectedAreas",
+    # "corruptionTraining",
+    # "passengerVehicles",
+    # "corporateDebtSecurities",
+    # "general",
+    # "renewableEnergyProduction",
+    # "electricityUsage",
+    # "staffCommuting",
+    # "emissionsToWater",
     "hotels",
-    "refrigerantUsage",
-    "highImpactClimateSectors",
-    "nonRenewableEnergyConsumption",
-    "revenue",
-    "controversialWeapons",
-    "naturalGas",
-    "electricityUsage",
-    "humanRightsRiskAssessment",
+    # "refrigerantUsage",
+    # "highImpactClimateSectors",
+    # "nonRenewableEnergyConsumption",
+    # "revenue",
+    # "controversialWeapons",
+    # "naturalGas",
+    # "electricityUsage",
+    # "humanRightsRiskAssessment",
 )
 
 SUBQUERY = " ".join(
@@ -50,8 +50,7 @@ def get_data_from_db() -> pd.DataFrame:
     engine = pg.connect(
         f"dbname='{database}' user='{username}' host='{host}' port='{port}' password='{password}'"
     )
-    df = pd.read_sql(sql=QUERY, con=engine)
-    return df
+    return pd.read_sql(sql=QUERY, con=engine)
 
 
 def flatten_json(json_data):
@@ -80,20 +79,26 @@ hashmap_of_df = {
     table: df_raw[df_raw["type_of_data"] == table] for table in TABLES_TO_CREATE
 }
 
-print(hashmap_of_df)
+# print(hashmap_of_df)
 
 #
-# for table, df in hashmap_of_df.items():
-#     # Apply the function to flatten the JSON column
-#     json_cols = df["sections"].apply(flatten_json)
-#
-#     # Convert the list of dictionaries into a DataFrame
-#     json_df = pd.json_normalize(json_cols)
-#
-#     # Concatenate the original DataFrame with the flattened JSON DataFrame
-#     df = pd.concat([df.drop(columns=["sections"]), json_df], axis=1)
-#
-#     # Show the resulting DataFrame
-#     print(table)
-#
-#     df.to_csv(f"data_flatten_{table}.csv")
+for table, df in hashmap_of_df.items():
+    # Concatenate the original DataFrame with the flattened JSON DataFrame
+    df_normalized = pd.json_normalize(df["sections"])
+
+    # Show the resulting DataFrame
+    df_explodable_columns = df_normalized.applymap(type).eq(list).all()
+    explodable_columns = df_normalized.columns[df_explodable_columns]
+
+    for col in explodable_columns:
+        df_normalized = df_normalized.explode(col)
+
+    for col in explodable_columns:
+        if col in df.columns:
+            df_normalized = pd.json_normalize(df[col])
+            df = pd.concat([df.drop(columns=[col]), df_normalized], axis=1)
+
+    print(df)
+
+    df.to_csv(f"data_cleaned_{table}.csv")
+
