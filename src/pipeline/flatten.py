@@ -1,5 +1,6 @@
+from typing import Any
+
 import pandas as pd
-import json
 import psycopg2 as pg
 
 TABLES_TO_CREATE = {
@@ -75,7 +76,7 @@ TABLES_TO_CREATE = {
 }
 
 
-def get_query() -> str:
+def get_submission_timeline_query() -> str:
     subquery_for_type = " ".join(
         [
             f"WHEN sections::jsonb ? '{table}' THEN '{table}'"
@@ -126,19 +127,21 @@ def get_query() -> str:
         """
 
 
-def get_data_from_db() -> pd.DataFrame:
+def get_engine(database: str = "postgres") -> Any:
     # Define the PostgreSQL database connection details
     username = "admin"
     password = "supersecret123"
     host = "localhost"
     port = "5432"
-    database = "postgres"
 
-    engine = pg.connect(
+    return pg.connect(
         f"dbname='{database}' user='{username}' host='{host}' port='{port}' password='{password}'"
     )
-    print(get_query())
-    return pd.read_sql(sql=get_query(), con=engine)
+
+
+def get_data_from_db() -> pd.DataFrame:
+    print(get_submission_timeline_query())
+    return pd.read_sql(sql=get_submission_timeline_query(), con=get_engine())
 
 
 df_raw = get_data_from_db()
@@ -150,12 +153,12 @@ hashmap_of_df = {
     table: df_raw[df_raw["type_of_data"] == table] for table in TABLES_TO_CREATE
 }
 
-
 for table, df in hashmap_of_df.items():
-
     df_normalized = pd.json_normalize(
         df["extracted_data"], record_path="table", meta=["primary_key"]
     )
 
     df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
-    df_final.to_csv(f"data_normazlied_{table}.csv")
+    df_final.to_sql(
+        name=table, con=get_engine(database="reporting"), if_exists="append"
+    )
