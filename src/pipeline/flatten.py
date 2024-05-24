@@ -97,49 +97,33 @@ def get_query() -> str:
         ]
     )
 
-#     return f"""
-# WITH extracted_data_cte AS (
-#     SELECT
-#         *,
-#         sections -> 'dates' -> 'date' ->> 'start' AS start_date,
-#         sections -> 'dates' -> 'date' ->> 'end' AS end_date,
-#         sections -> 'siteId' AS site_id,
-#         CASE {subquery_for_type}
-#             ELSE NULL
-#         END AS type_of_data,
-#         CASE
-#            {subquery_for_extracted_data_with_id}
-#             ELSE NULL
-#         END AS extracted_data_with_id
-#     FROM
-#         submission_timelines
-# )
-# SELECT
-#     *,
-#     CASE
-#         {subquery_for_extracted_data}
-#             ELSE NULL
-#         END AS extracted_data
-# FROM
-#     extracted_data_cte
-#
-# """
-    return f"""SELECT * , 
-    sections ->'dates'->'date'->>'start' as start_date,
-    sections ->'dates'->'date'->>'end'  AS end_date,
-    sections -> 'siteId' as site_id ,
-    CASE
+    return f"""
+    WITH extracted_data_cte AS (
+        SELECT
+            *,
+            sections -> 'dates' -> 'date' ->> 'start' AS start_date,
+            sections -> 'dates' -> 'date' ->> 'end' AS end_date,
+            sections -> 'siteId' AS site_id,
+            CASE {subquery_for_type}
+                ELSE NULL
+            END AS type_of_data,
+            CASE
+               {subquery_for_extracted_data_with_id}
+                ELSE NULL
+            END AS extracted_data_with_id
+        FROM
+            submission_timelines
+    )
+    SELECT
+        *,
+        CASE
             {subquery_for_extracted_data}
-            ELSE NULL
-    END AS extracted_data,
-    CASE {subquery_for_type}
                 ELSE NULL
-    END AS type_of_data,
-    CASE {subquery_for_extracted_data_with_id}
-                ELSE NULL
-    END AS extracted_data_with_id
-    from submission_timelines ;
-    """
+            END AS extracted_data
+    FROM
+        extracted_data_cte
+        """
+
 
 
 def get_data_from_db() -> pd.DataFrame:
@@ -186,12 +170,12 @@ hashmap_of_df = {
     table: df_raw[df_raw["type_of_data"] == table] for table in TABLES_TO_CREATE
 }
 
-def
+
 
 for table, df in hashmap_of_df.items():
     df_exploded = df.explode('extracted_data')
-    df_normalized = pd.json_normalize(df['extracted_data_with_id'], meta=["id"])
+    df_normalized = pd.json_normalize(df['extracted_data'], record_path="table",meta=["id"])
 
-    df['extracted_data_with_id'].to_csv(f"data_normazlied_{table}.csv")
-    print(df_normalized)
+    df_normalized.to_csv(f"data_normazlied_{table}.csv")
+    # print(df_normalized)
 
