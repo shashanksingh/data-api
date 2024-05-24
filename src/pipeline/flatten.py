@@ -2,6 +2,7 @@ from typing import Any
 
 import pandas as pd
 import psycopg2 as pg
+from sqlalchemy import create_engine
 
 TABLES_TO_CREATE = {
     # "ceoPay",
@@ -159,6 +160,16 @@ for table, df in hashmap_of_df.items():
     )
 
     df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
-    df_final.to_sql(
-        name=table, con=get_engine(database="reporting"), if_exists="append"
+
+    username = "admin"
+    password = "supersecret123"
+    host = "localhost"
+    port = "5432"
+
+    engine = create_engine(
+        f"postgresql+psycopg2://{username}:{password}@{host}/reporting"
     )
+
+    df_final.drop(
+        ["sections", "extracted_data_with_id", "extracted_data"], axis=1
+    ).to_sql(name=table, con=engine, if_exists="append")
