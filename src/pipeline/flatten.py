@@ -125,7 +125,6 @@ def get_query() -> str:
         """
 
 
-
 def get_data_from_db() -> pd.DataFrame:
     # Define the PostgreSQL database connection details
     username = "admin"
@@ -163,7 +162,7 @@ def flatten_json(json_data):
 # Sample data for demonstration
 df_raw = get_data_from_db()
 df_raw.insert(0, "synthetic_id", range(1, 1 + len(df_raw)))
-df_raw.dropna(subset=['type_of_data'], inplace=True)
+df_raw.dropna(subset=["type_of_data"], inplace=True)
 # df_raw.to_csv("raw_data.csv")
 
 hashmap_of_df = {
@@ -171,11 +170,11 @@ hashmap_of_df = {
 }
 
 
-
 for table, df in hashmap_of_df.items():
-    df_exploded = df.explode('extracted_data')
-    df_normalized = pd.json_normalize(df['extracted_data'], record_path="table",meta=["id"])
+    df_exploded = df.explode("extracted_data")
+    df_normalized = pd.json_normalize(
+        df["extracted_data"], record_path="table", meta=["id"]
+    )
 
     df_normalized.to_csv(f"data_normazlied_{table}.csv")
     # print(df_normalized)
-
