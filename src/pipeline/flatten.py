@@ -20,8 +20,8 @@ TABLES_TO_CREATE = {
     # "sites",
     # "minimumWageGuarantee",
     # "BOD",
-    # "injuryRate",
-    # "fuel",
+    "injuryRate",
+    "fuel",
     # "protectedAreas",
     # "corruptionTraining",
     # "passengerVehicles",
@@ -72,7 +72,6 @@ TABLES_TO_CREATE = {
     # "renewableEnergy",
     # "airPollutants",
     # "fuel",
-
 }
 
 
@@ -86,11 +85,45 @@ def get_query() -> str:
 
     subquery_for_extracted_data = " ".join(
         [
-            f"WHEN sections::jsonb ? '{table}'  THEN sections ->'{table}' "
+            f"WHEN extracted_data_with_id::jsonb ? '{table}'  THEN extracted_data_with_id ->'{table}' "
             for table in TABLES_TO_CREATE
         ]
     )
 
+    subquery_for_extracted_data_with_id = " ".join(
+        [
+            f"WHEN sections::jsonb ? '{table}'  THEN Jsonb_insert( sections::jsonb , '{{ {table}, id}}', To_jsonb(id), true ) "
+            for table in TABLES_TO_CREATE
+        ]
+    )
+
+#     return f"""
+# WITH extracted_data_cte AS (
+#     SELECT
+#         *,
+#         sections -> 'dates' -> 'date' ->> 'start' AS start_date,
+#         sections -> 'dates' -> 'date' ->> 'end' AS end_date,
+#         sections -> 'siteId' AS site_id,
+#         CASE {subquery_for_type}
+#             ELSE NULL
+#         END AS type_of_data,
+#         CASE
+#            {subquery_for_extracted_data_with_id}
+#             ELSE NULL
+#         END AS extracted_data_with_id
+#     FROM
+#         submission_timelines
+# )
+# SELECT
+#     *,
+#     CASE
+#         {subquery_for_extracted_data}
+#             ELSE NULL
+#         END AS extracted_data
+# FROM
+#     extracted_data_cte
+#
+# """
     return f"""SELECT * , 
     sections ->'dates'->'date'->>'start' as start_date,
     sections ->'dates'->'date'->>'end'  AS end_date,
@@ -101,7 +134,10 @@ def get_query() -> str:
     END AS extracted_data,
     CASE {subquery_for_type}
                 ELSE NULL
-            END AS type_of_data
+    END AS type_of_data,
+    CASE {subquery_for_extracted_data_with_id}
+                ELSE NULL
+    END AS extracted_data_with_id
     from submission_timelines ;
     """
 
@@ -117,6 +153,7 @@ def get_data_from_db() -> pd.DataFrame:
     engine = pg.connect(
         f"dbname='{database}' user='{username}' host='{host}' port='{port}' password='{password}'"
     )
+    print(get_query())
     return pd.read_sql(sql=get_query(), con=engine)
 
 
@@ -149,13 +186,12 @@ hashmap_of_df = {
     table: df_raw[df_raw["type_of_data"] == table] for table in TABLES_TO_CREATE
 }
 
-# print(hashmap_of_df)
+def
 
-#
 for table, df in hashmap_of_df.items():
-    # Concatenate the original DataFrame with the flattened JSON DataFrame
     df_exploded = df.explode('extracted_data')
-    df_normalized = pd.json_normalize(df['extracted_data'], "table")
+    df_normalized = pd.json_normalize(df['extracted_data_with_id'], meta=["id"])
 
-    df_normalized.to_csv("raw_data.csv")
+    df['extracted_data_with_id'].to_csv(f"data_normazlied_{table}.csv")
+    print(df_normalized)
 
