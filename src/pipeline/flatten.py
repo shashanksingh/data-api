@@ -31,7 +31,7 @@ TABLES_TO_CREATE = {
     # "electricityUsage",
     # "staffCommuting",
     # "emissionsToWater",
-    "hotels",
+    # "hotels",
     # "ombudsman",
     # "employeeTraining",
     # "water",
@@ -42,7 +42,7 @@ TABLES_TO_CREATE = {
     # "nonRenewableEnergyConsumption",
     # "revenue",
     # "controversialWeapons",
-    # "naturalGas",
+    "naturalGas",
     # "electricityUsage",
     # "humanRightsRiskAssessment",
     # "direct",
@@ -92,7 +92,7 @@ def get_query() -> str:
 
     subquery_for_extracted_data_with_id = " ".join(
         [
-            f"WHEN sections::jsonb ? '{table}'  THEN Jsonb_insert( sections::jsonb , '{{ {table}, id}}', To_jsonb(id), true ) "
+            f"WHEN sections::jsonb ? '{table}'  THEN Jsonb_insert( sections::jsonb , '{{ {table}, primary_key}}', To_jsonb(id), true ) "
             for table in TABLES_TO_CREATE
         ]
     )
@@ -101,6 +101,7 @@ def get_query() -> str:
     WITH extracted_data_cte AS (
         SELECT
             *,
+            id as primary_key,
             sections -> 'dates' -> 'date' ->> 'start' AS start_date,
             sections -> 'dates' -> 'date' ->> 'end' AS end_date,
             sections -> 'siteId' AS site_id,
@@ -140,26 +141,6 @@ def get_data_from_db() -> pd.DataFrame:
     return pd.read_sql(sql=get_query(), con=engine)
 
 
-def flatten_json(json_data):
-    out = {}
-
-    def flatten(x, name=""):
-        if type(x) is dict:
-            for a in x:
-                flatten(x[a], name + a + "_")
-        elif type(x) is list:
-            i = 0
-            for a in x:
-                flatten(a, name + str(i) + "_")
-                i += 1
-        else:
-            out[name[:-1]] = x
-
-    flatten(json.loads(json_data))
-    return out
-
-
-# Sample data for demonstration
 df_raw = get_data_from_db()
 df_raw.insert(0, "synthetic_id", range(1, 1 + len(df_raw)))
 df_raw.dropna(subset=["type_of_data"], inplace=True)
@@ -171,10 +152,10 @@ hashmap_of_df = {
 
 
 for table, df in hashmap_of_df.items():
-    df_exploded = df.explode("extracted_data")
+
     df_normalized = pd.json_normalize(
-        df["extracted_data"], record_path="table", meta=["id"]
+        df["extracted_data"], record_path="table", meta=["primary_key"]
     )
 
-    df_normalized.to_csv(f"data_normazlied_{table}.csv")
-    # print(df_normalized)
+    df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
+    df_final.to_csv(f"data_normazlied_{table}.csv")
