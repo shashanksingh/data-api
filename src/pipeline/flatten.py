@@ -5,12 +5,16 @@ import psycopg2 as pg
 from sqlalchemy import create_engine
 import functools
 
+
 DIMENSIONS = {
-    "public.countries": "countries",
-    "public.sites": "sites",
+    # "public.countries": "dimension_public_  countries",
+    # "public.sites": "dimension_public_sites",
+    # "conversion_factors.fuel": "dimension_conversion_factor_fuel",
+    "conversion_factors.metadata": "dimension_conversion_factor_metadata",
+    # "conversion_factors.rate_sources": "dimension_conversion_factor_rate_sources",
 }
 
-TABLES_TO_CREATE = {
+FACTS = {
     # "ceoPay",
     # "employeeData",
     # "employeeTraining",
@@ -87,14 +91,14 @@ def get_submission_timeline_query() -> str:
     subquery_for_type = " ".join(
         [
             f"WHEN sections::jsonb ? '{table}' THEN '{table}'"
-            for table in TABLES_TO_CREATE
+            for table in FACTS
         ]
     )
 
     subquery_for_extracted_data = " ".join(
         [
             f"WHEN extracted_data_with_id::jsonb ? '{table}'  THEN extracted_data_with_id ->'{table}' "
-            for table in TABLES_TO_CREATE
+            for table in FACTS
         ]
     )
 
@@ -102,7 +106,7 @@ def get_submission_timeline_query() -> str:
         [
             f"WHEN sections::jsonb ? '{table}'  THEN Jsonb_insert( sections::jsonb , '{{ {table}, primary_key}}', "
             f"To_jsonb(id), true )"
-            for table in TABLES_TO_CREATE
+            for table in FACTS
         ]
     )
 
@@ -163,7 +167,7 @@ df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
 df_raw.dropna(subset=["type_of_data"], inplace=True)
 
 hashmap_of_df = {
-    table: df_raw[df_raw["type_of_data"] == table] for table in TABLES_TO_CREATE
+    table: df_raw[df_raw["type_of_data"] == table] for table in FACTS
 }
 
 for table, df in hashmap_of_df.items():
@@ -191,4 +195,8 @@ for table, name in DIMENSIONS.items():
     partial_callback = functools.partial(get_fullload_query, table=table)
 
     df_raw = get_data_from_db(sql_callback=partial_callback)
-    df_raw.to_sql(name=name, con=engine, if_exists="append", method="multi")
+    nested_cols = df_raw.dtypes
+
+
+    print(nested_cols)
+    # df_raw.to_sql(name=name, con=engine, if_exists="append", method="multi")
