@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from dataclasses import dataclass
+from typing import Any, Callable, List
 
 import pandas as pd
 import psycopg2 as pg
@@ -6,11 +7,29 @@ from sqlalchemy import create_engine
 import functools
 
 
+@dataclass
+class Table:
+    table_name: str
+    schema_name: str
+    target_table_name: str
+
+    def __hash__(self):
+        return hash(f"{self.schema_name}.{self.table_name}")
+
+
 DIMENSIONS = {
-    # "public.countries": "dimension_public_  countries",
+    Table(
+        table_name="countries",
+        schema_name="public",
+        target_table_name="dimension_public_  countries",
+    ),
     # "public.sites": "dimension_public_sites",
     # "conversion_factors.fuel": "dimension_conversion_factor_fuel",
-    "conversion_factors.metadata": "dimension_conversion_factor_metadata",
+    Table(
+        table_name="metadata",
+        schema_name="conversion_factors",
+        target_table_name="dimension_conversion_factor_metadata",
+    ),
     # "conversion_factors.rate_sources": "dimension_conversion_factor_rate_sources",
 }
 
@@ -89,10 +108,7 @@ FACTS = {
 
 def get_submission_timeline_query() -> str:
     subquery_for_type = " ".join(
-        [
-            f"WHEN sections::jsonb ? '{table}' THEN '{table}'"
-            for table in FACTS
-        ]
+        [f"WHEN sections::jsonb ? '{table}' THEN '{table}'" for table in FACTS]
     )
 
     subquery_for_extracted_data = " ".join(
@@ -156,8 +172,18 @@ def get_engine(database: str = "postgres") -> Any:
 
 
 def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
-    # print(get_submission_timeline_query())
     return pd.read_sql(sql=sql_callback(), con=get_engine())
+
+
+def get_unstructured_columns_types_from_tables(table_name: str) -> List[str]:
+    json_columns_query = f"""
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_name = '{table_name}' AND data_type IN ('json', 'jsonb');
+    """
+
+    # Execute the query and fetch the results
+    return pd.read_sql_query(json_columns_query, get_engine())["column_name"].tolist()
 
 
 # submission timeline
@@ -166,9 +192,7 @@ df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
 # temporary
 df_raw.dropna(subset=["type_of_data"], inplace=True)
 
-hashmap_of_df = {
-    table: df_raw[df_raw["type_of_data"] == table] for table in FACTS
-}
+hashmap_of_df = {table: df_raw[df_raw["type_of_data"] == table] for table in FACTS}
 
 for table, df in hashmap_of_df.items():
     df_normalized = pd.json_normalize(
@@ -191,12 +215,22 @@ for table, df in hashmap_of_df.items():
     ).to_sql(name=table, con=engine, if_exists="append", method="multi")
 
 # Dimension
-for table, name in DIMENSIONS.items():
-    partial_callback = functools.partial(get_fullload_query, table=table)
+for table in DIMENSIONS:
+    partial_callback = functools.partial(
+        get_fullload_query, table=f"{table.schema_name}.{table.table_name}"
+    )
 
-    df_raw = get_data_from_db(sql_callback=partial_callback)
-    nested_cols = df_raw.dtypes
+    df_raw: pd.DataFrame = get_data_from_db(sql_callback=partial_callback)
 
+    normalize_columns: List = get_unstructured_columns_types_from_tables(
+        table_name=table.table_name
+    )
+    for column in normalize_columns:
+        df_normalized = pd.json_normalize(df_raw[column])
+        df_raw = pd.concat([df_raw, df_normalized], axis=1)
 
-    print(nested_cols)
-    # df_raw.to_sql(name=name, con=engine, if_exists="append", method="multi")
+    print(df_raw.columns)
+
+    # df_raw.to_sql(
+    #     name=table.target_table_name, con=engine, if_exists="append", method="multi"
+    # )
