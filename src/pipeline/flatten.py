@@ -1,8 +1,14 @@
-from typing import Any
+from typing import Any, Callable
 
 import pandas as pd
 import psycopg2 as pg
 from sqlalchemy import create_engine
+import functools
+
+DIMENSIONS = {
+    "public.countries": "countries",
+    "public.sites": "sites",
+}
 
 TABLES_TO_CREATE = {
     # "ceoPay",
@@ -14,7 +20,7 @@ TABLES_TO_CREATE = {
     # "humanRightsAssessment",
     # "humanRightsRisks",
     # "passengerVehicles",
-    # "electricVehicles",
+    "electricVehicles",
     # "heavyVehicles",
     # "waterUsage",
     # "refridgerantUsage",
@@ -94,7 +100,8 @@ def get_submission_timeline_query() -> str:
 
     subquery_for_extracted_data_with_id = " ".join(
         [
-            f"WHEN sections::jsonb ? '{table}'  THEN Jsonb_insert( sections::jsonb , '{{ {table}, primary_key}}', To_jsonb(id), true ) "
+            f"WHEN sections::jsonb ? '{table}'  THEN Jsonb_insert( sections::jsonb , '{{ {table}, primary_key}}', "
+            f"To_jsonb(id), true )"
             for table in TABLES_TO_CREATE
         ]
     )
@@ -128,6 +135,10 @@ def get_submission_timeline_query() -> str:
         """
 
 
+def get_fullload_query(table: str) -> str:
+    return f"SELECT * from {table}"
+
+
 def get_engine(database: str = "postgres") -> Any:
     # Define the PostgreSQL database connection details
     username = "admin"
@@ -140,15 +151,16 @@ def get_engine(database: str = "postgres") -> Any:
     )
 
 
-def get_data_from_db() -> pd.DataFrame:
-    print(get_submission_timeline_query())
-    return pd.read_sql(sql=get_submission_timeline_query(), con=get_engine())
+def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
+    # print(get_submission_timeline_query())
+    return pd.read_sql(sql=sql_callback(), con=get_engine())
 
 
-df_raw = get_data_from_db()
-df_raw.insert(0, "synthetic_id", range(1, 1 + len(df_raw)))
+# submission timeline
+df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
+
+# temporary
 df_raw.dropna(subset=["type_of_data"], inplace=True)
-# df_raw.to_csv("raw_data.csv")
 
 hashmap_of_df = {
     table: df_raw[df_raw["type_of_data"] == table] for table in TABLES_TO_CREATE
@@ -172,4 +184,11 @@ for table, df in hashmap_of_df.items():
 
     df_final.drop(
         ["sections", "extracted_data_with_id", "extracted_data"], axis=1
-    ).to_sql(name=table, con=engine, if_exists="append")
+    ).to_sql(name=table, con=engine, if_exists="append", method="multi")
+
+# Dimension
+for table, name in DIMENSIONS.items():
+    partial_callback = functools.partial(get_fullload_query, table=table)
+
+    df_raw = get_data_from_db(sql_callback=partial_callback)
+    df_raw.to_sql(name=name, con=engine, if_exists="append", method="multi")
