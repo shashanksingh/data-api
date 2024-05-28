@@ -237,7 +237,9 @@ for table, df in hashmap_of_df.items():
 
     df_final.drop(
         ["sections", "extracted_data_with_id", "extracted_data"], axis=1
-    ).to_sql(name=table, con=engine, if_exists="append", method="multi", schema="public")
+    ).to_sql(
+        name=table, con=engine, if_exists="append", method="multi", schema="public"
+    )
 
 # Dimension
 for table in DIMENSIONS:
