@@ -12,6 +12,7 @@ class Table:
     table_name: str
     schema_name: str
     target_table_name: str
+    target_schema_name: str
 
     def __hash__(self):
         return hash(f"{self.schema_name}.{self.table_name}")
@@ -21,16 +22,33 @@ DIMENSIONS = {
     Table(
         table_name="countries",
         schema_name="public",
-        target_table_name="dimension_public_  countries",
+        target_table_name="dimension_public_countries",
+        target_schema_name="public",
     ),
-    # "public.sites": "dimension_public_sites",
-    # "conversion_factors.fuel": "dimension_conversion_factor_fuel",
+    Table(
+        table_name="sites",
+        schema_name="public",
+        target_table_name="dimension_public_sites",
+        target_schema_name="public",
+    ),
+    Table(
+        table_name="fuel",
+        schema_name="conversion_factors",
+        target_table_name="dimension_conversion_factor_fuel",
+        target_schema_name="public",
+    ),
     Table(
         table_name="metadata",
         schema_name="conversion_factors",
         target_table_name="dimension_conversion_factor_metadata",
+        target_schema_name="public",
     ),
-    # "conversion_factors.rate_sources": "dimension_conversion_factor_rate_sources",
+    Table(
+        table_name="rate_sources",
+        schema_name="conversion_factors",
+        target_table_name="dimension_conversion_factor_rate_sources",
+        target_schema_name="public",
+    ),
 }
 
 FACTS = {
@@ -226,11 +244,17 @@ for table in DIMENSIONS:
         table_name=table.table_name
     )
     for column in normalize_columns:
-        df_normalized = pd.json_normalize(df_raw[column])
+        df_normalized = pd.json_normalize(df_raw[column]).drop("id", axis=1)
         df_raw = pd.concat([df_raw, df_normalized], axis=1)
 
-    print(df_raw.columns)
+    df_excluded = df_raw.loc[:, ~df_raw.columns.isin(normalize_columns)]
 
-    # df_raw.to_sql(
-    #     name=table.target_table_name, con=engine, if_exists="append", method="multi"
-    # )
+    df_excluded.to_sql(
+        name=table.target_table_name,
+        con=engine,
+        if_exists="replace",
+        method="multi",
+        schema=table.target_schema_name,
+        index=False,
+        chunksize=500,
+    )
