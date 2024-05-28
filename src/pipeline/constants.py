@@ -34,70 +34,28 @@ hashmap_of_units = {
         convertTo="LITRES_UNIT",
         conversion="usGallonsToLitres",
     ),
-    #
-    # export const KG_UNIT = {
-    #   id: '7abe5fe6-f713-44c4-8f91-aa76061ed4ee',
-    #   label: 'Kg'
-    # };
-    #
-    # export const TONS_UNIT = {
-    #   id: '7ab7abca-a8f4-46be-b8f3-d408bd54d0b1',
-    #   label: 'Tons'
-    # };
-    #
-    # export const TONNES_UNIT = {
-    #   id: 'cd58b882-5f78-4f5e-8d7b-ae14954db3eb',
-    #   label: 'Tonnes'
-    # };
-    #
-    # export const TONNES_KM_UNIT = {
-    #   id: '301f1bf6-915b-4cca-8dbc-0225aae5d64f',
-    #   label: 'Tonnes-km'
-    # };
-    #
-    # export const KM_UNIT = {
-    #   id: 'c4bd40f7-c609-420a-bb15-2ce7e8aedc2b',
-    #   label: 'Km'
-    # };
-    #
-    # export const PASSENGER_KM_UNIT = {
-    #   id: 'c009489c-89ab-4b04-831c-605f9c6daa7f',
-    #   label: 'Km'
-    # };
-    #
-    # export const MILES_UNIT = {
-    #   id: '5275ea32-58d0-42b4-afc7-8f7f5f423dd7',
-    #   label: 'Mi',
-    #   convertTo: KM_UNIT.id,
-    #   conversion: milesToKm
-    # };
-    #
-    # export const PASSENGER_MILES_UNIT = {
-    #   id: '42c7cd4f-1ce4-479b-b9c9-009f3d9317c2',
-    #   label: 'Mi',
-    #   convertTo: PASSENGER_KM_UNIT.id,
-    #   conversion: milesToKm
-    # };
-    #
-    # export const MEGALITRES_UNIT = {
-    #   id: 'da30e86d-1afa-4b73-bf94-580c64bb4acf',
-    #   label: 'ML'
-    # };
-    #
-    # export const GWH_UNIT = {
-    #   id: 'd7d384f5-0152-436c-90c7-e8f696ee4baa',
-    #   label: 'GWh'
-    # };
-    #
-    # export const GBP_UNIT = {
-    #   id: 'bb265c1a-23ce-4761-9a5b-47491feecb2d',
-    #   label: 'GBP'
-    # };
-    #
-    # export const USD_UNIT = {
-    #   id: 'ffa91f39-ff16-4eb2-bea5-e8875aec61d0',
-    #   label: 'USD'
-    # };
-    #
-    # }
+    "KG_UNIT": Unit(id="7abe5fe6-f713-44c4-8f91-aa76061ed4ee", label="Kg"),
+    "TONS_UNIT": Unit(id="7ab7abca-a8f4-46be-b8f3-d408bd54d0b1", label="Tons"),
+    "TONNES_UNIT": Unit(id="cd58b882-5f78-4f5e-8d7b-ae14954db3eb", label="Tonnes"),
+    "TONNES_KM_UNIT": Unit(
+        id="301f1bf6-915b-4cca-8dbc-0225aae5d64f", label="Tonnes-km"
+    ),
+    "KM_UNIT": Unit(id="c4bd40f7-c609-420a-bb15-2ce7e8aedc2b", label="Km"),
+    "PASSENGER_KM_UNIT": Unit(id="c009489c-89ab-4b04-831c-605f9c6daa7f", label="Km"),
+    "MILES_UNIT": Unit(
+        id="5275ea32-58d0-42b4-afc7-8f7f5f423dd7",
+        label="Mi",
+        convertTo="KM_UNIT",
+        conversion="milesToKm",
+    ),
+    "PASSENGER_MILES_UNIT": Unit(
+        id="42c7cd4f-1ce4-479b-b9c9-009f3d9317c2",
+        label="Mi",
+        convertTo="PASSENGER_KM_UNIT",
+        conversion="milesToKm",
+    ),
+    "MEGALITRES_UNIT": Unit(id="da30e86d-1afa-4b73-bf94-580c64bb4acf", label="ML"),
+    "GWH_UNIT": Unit(id="d7d384f5-0152-436c-90c7-e8f696ee4baa", label="GWh"),
+    "GBP_UNIT": Unit(id="bb265c1a-23ce-4761-9a5b-47491feecb2d", label="GBP"),
+    "USD_UNIT": Unit(id="ffa91f39-ff16-4eb2-bea5-e8875aec61d0", label="USD"),
 }
