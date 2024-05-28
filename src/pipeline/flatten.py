@@ -38,6 +38,12 @@ DIMENSIONS = {
         target_schema_name="public",
     ),
     Table(
+        table_name="freight",
+        schema_name="conversion_factors",
+        target_table_name="dimension_conversion_factor_freight",
+        target_schema_name="public",
+    ),
+    Table(
         table_name="metadata",
         schema_name="conversion_factors",
         target_table_name="dimension_conversion_factor_metadata",
@@ -210,6 +216,7 @@ df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
 # temporary
 df_raw.dropna(subset=["type_of_data"], inplace=True)
 
+# FACTS
 hashmap_of_df = {table: df_raw[df_raw["type_of_data"] == table] for table in FACTS}
 
 for table, df in hashmap_of_df.items():
@@ -219,18 +226,18 @@ for table, df in hashmap_of_df.items():
 
     df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
 
-    username = "admin"
-    password = "supersecret123"
+    username = "dataapi"
+    password = "dataapi"
     host = "localhost"
-    port = "5432"
+    port = "5433"
 
     engine = create_engine(
-        f"postgresql+psycopg2://{username}:{password}@{host}/reporting"
+        f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
     )
 
     df_final.drop(
         ["sections", "extracted_data_with_id", "extracted_data"], axis=1
-    ).to_sql(name=table, con=engine, if_exists="append", method="multi")
+    ).to_sql(name=table, con=engine, if_exists="append", method="multi", schema="public")
 
 # Dimension
 for table in DIMENSIONS:
