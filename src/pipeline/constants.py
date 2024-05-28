@@ -1,24 +1,23 @@
 from dataclasses import dataclass
-from typing import Callable
 
 
 @dataclass
 class Unit:
-    id: str
+    name: str
     label: str
     convertTo: str = None
     conversion: str = None
 
 
 hashmap_of_units = {
-    "KWH_UNIT": Unit(id="d11e91ed-3fb3-40af-91a5-514e02103866", label="kWh"),
-    "MWH_UNIT": Unit(
-        id="60799459-2fd4-4998-8b10-59066b386102",
+    "d11e91ed-3fb3-40af-91a5-514e02103866": Unit(name="KWH_UNIT", label="kWh"),
+    "60799459-2fd4-4998-8b10-59066b386102": Unit(
+        name="MWH_UNIT",
         label="MWh",
         convertTo="KWH_UNIT",
         conversion="increaseValue1000",
     ),
-    "LITRES_UNIT": Unit(id="477522a8-76fd-49da-a0b6-9867bdc39cac", label="L"),
+    "477522a8-76fd-49da-a0b6-9867bdc39cac": Unit(name="LITRES_UNIT", label="L"),
     "KILOLITRES_UNIT": Unit(
         id="c0a76f6c-86a3-4333-b45c-6cf04cccddf4",
         label="kL",
@@ -58,4 +57,5 @@ hashmap_of_units = {
     "GWH_UNIT": Unit(id="d7d384f5-0152-436c-90c7-e8f696ee4baa", label="GWh"),
     "GBP_UNIT": Unit(id="bb265c1a-23ce-4761-9a5b-47491feecb2d", label="GBP"),
     "USD_UNIT": Unit(id="ffa91f39-ff16-4eb2-bea5-e8875aec61d0", label="USD"),
+    "KWH_NET": Unit(id="accdfdb5-9db6-41f3-a990-c426434255fc", label="KWh - net"),
 }
