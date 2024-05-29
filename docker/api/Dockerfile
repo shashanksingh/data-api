@@ -10,5 +10,5 @@ COPY ./src/api /code/src/api
 # Install the required packages
 RUN pip install --no-cache-dir --upgrade -r /code/src/api/requirements.txt
 
-CMD ["fastapi", "run", "./api/main.py", "--port", "6000"]
+CMD ["fastapi", "dev", "./api/main.py", "--port", "6000"]
 

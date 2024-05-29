@@ -103,9 +103,9 @@ services:
       volumes:
         - ./src:/code
       environment:
-        TRINO_HOST: "oh-so-secret"
+        TRINO_HOST: "trino"
         TRINO_PORT: 8080
-        TRINO_USER: ""
+        TRINO_USER: "admin"
 
   pipeline:
     build:

@@ -5,3 +5,7 @@
     get country dimension also
     we need to chart superset->trino-> postgres dashbaords , so we can show tommorow during standup
     also lets make measurement df and a table
+
+
+
+    1. access fast api server from browser
