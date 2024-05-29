@@ -1,13 +1,15 @@
+import os
+
 from fastapi import FastAPI, HTTPException
 import trino
-from src.api.models import QueryRequest
+from api.models import QueryRequest
 
 app = FastAPI()
 
 # Trino configuration
-TRINO_HOST = "trino"
-TRINO_PORT = 8080  # default port
-TRINO_USER = ""
+TRINO_HOST = os.environ['TRINO_HOST']
+TRINO_PORT = os.environ['TRINO_PORT']
+TRINO_USER = os.environ['TRINO_USER']
 
 
 # Create a Trino connection
@@ -15,9 +17,7 @@ def get_trino_connection():
     return trino.dbapi.connect(
         host=TRINO_HOST,
         port=TRINO_PORT,
-        user=TRINO_USER,
-        catalog=TRINO_CATALOG,
-        schema=TRINO_SCHEMA,
+        user=TRINO_USER
     )
 
 

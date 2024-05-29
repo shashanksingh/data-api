@@ -95,15 +95,17 @@ services:
 
 
   api:
-    build: ./docker/api
-    ports:
-      - "6000:6000"
-    volumes:
-      - ./src/api:/code/
-    environment:
-      TRINO_HOST: "oh-so-secret"
-      TRINO_PORT: 8080
-      TRINO_USER: ""
+      build:
+        context: .
+        dockerfile: ./docker/api/Dockerfile
+      ports:
+        - "6000:6000"
+      volumes:
+        - ./src:/code
+      environment:
+        TRINO_HOST: "oh-so-secret"
+        TRINO_PORT: 8080
+        TRINO_USER: ""
 
 #  pipeline:
 #    build: ./docker/pipeline
