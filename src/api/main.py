@@ -1,8 +1,8 @@
 import os
-
 from fastapi import FastAPI, HTTPException
 import trino
 from api.models import QueryRequest
+from jinja2 import Environment, FileSystemLoader
 
 app = FastAPI()
 
@@ -21,12 +21,19 @@ def get_trino_connection():
     )
 
 
+env = Environment(loader=FileSystemLoader("templates"))
+
+
 @app.post("/v1/query")
 async def execute_query(request: QueryRequest):
     try:
         conn = get_trino_connection()
         cursor = conn.cursor()
-        cursor.execute(request.query)
+
+        template = env.get_template(template_name_or_list=f"{request.query}.sql.jinja")
+        query = template.render(context=request.filter)
+        cursor.execute(query)
+
         result = cursor.fetchall()
         cursor.close()
         return {"result": result}

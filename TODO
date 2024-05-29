@@ -1,11 +1,11 @@
 1. locust
 2. seed data continously ?
-3. queries on superset
-4. queries on api ?
+3. queries on superset :done
+4. queries on api ?hjm  jn
     get country dimension also
     we need to chart superset->trino-> postgres dashbaords , so we can show tommorow during standup
     also lets make measurement df and a table
 
 
 
-    1. access fast api server from browser
+    1. access fast api server from browser :done

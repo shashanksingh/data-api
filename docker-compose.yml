@@ -43,19 +43,6 @@ services:
       S3_SECRET_KEY: minio123
       S3_PATH_STYLE_ACCESS: "true"
       REGION: ""
-      GOOGLE_CLOUD_KEY_FILE_PATH: ""
-      AZURE_ADL_CLIENT_ID: ""
-      AZURE_ADL_CREDENTIAL: ""
-      AZURE_ADL_REFRESH_URL: ""
-      AZURE_ABFS_STORAGE_ACCOUNT: ""
-      AZURE_ABFS_ACCESS_KEY: ""
-      AZURE_WASB_STORAGE_ACCOUNT: ""
-      AZURE_ABFS_OAUTH: ""
-      AZURE_ABFS_OAUTH_TOKEN_PROVIDER: ""
-      AZURE_ABFS_OAUTH_CLIENT_ID: ""
-      AZURE_ABFS_OAUTH_SECRET: ""
-      AZURE_ABFS_OAUTH_ENDPOINT: ""
-      AZURE_WASB_ACCESS_KEY: ""
       HIVE_METASTORE_USERS_IN_ADMIN_ROLE: "admin"
     depends_on:
       - metastore_db
@@ -99,7 +86,7 @@ services:
         context: .
         dockerfile: ./docker/api/Dockerfile
       ports:
-        - "6000:6000"
+        - "6001:80"
       volumes:
         - ./src:/code
       environment:

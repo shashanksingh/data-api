@@ -2,3 +2,4 @@ uvicorn
 trino
 fastapi
 pydantic
+jinja2
