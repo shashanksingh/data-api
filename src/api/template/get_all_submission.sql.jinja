@@ -1,18 +1,16 @@
 SELECT f.factor,
        dcfrs."name"                 AS "sourceName",
        dcfm.retrieval_date,
-       dcfm."sourceyear",
-       dcfm."sourcemetadata.sector" AS "retrievalMetadata"
-       dcfm."sourceMetadata.unit_type" ,
+       dcfm."sourceYear",
+       dcfm."sourceMetadata.factor"  AS "retrievalMetadata",
        dcfm."sourceMetadata.unit" ,
-       dcfm.
+       dcfm."sourceMetadata.constituent_gases.co2e_total"
 FROM   (SELECT id,
                factor
-        FROM   dimension_conversion_factor_freight dcff
-        where dcff.id = {id}
+        FROM  dimension_conversion_factor_freight dcff
         ORDER  BY date_key DESC
         LIMIT  10) f
        INNER JOIN dimension_conversion_factor_metadata dcfm
                ON dcfm.id = f.id
        INNER JOIN dimension_conversion_factor_rate_sources dcfrs
-               ON dcfrs.id = dcfm.source_id; 
+               ON dcfrs.id = dcfm.source_id;

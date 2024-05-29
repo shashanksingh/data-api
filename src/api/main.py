@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 import trino
+from src.api.models import QueryRequest
 
 app = FastAPI()
 
@@ -23,11 +23,7 @@ def get_trino_connection():
     )
 
 
-class QueryRequest(BaseModel):
-    query: str
-
-
-@app.post("/execute-query/")
+@app.post("/v1/query")
 async def execute_query(request: QueryRequest):
     try:
         conn = get_trino_connection()
