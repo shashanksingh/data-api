@@ -93,6 +93,34 @@ services:
     environment:
       SUPERSET_SECRET_KEY: "oh-so-secret"
 
+
+  api:
+    build: ./docker/api
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./src/api:/code/
+    environment:
+      TRINO_HOST: "oh-so-secret"
+      TRINO_PORT: 8080
+      TRINO_USER: ""
+
+  pipeline:
+    build: ./docker/pipeline
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./src/pipeline:/code/
+    environment:
+      TRANSACTIONAL_POSTGRES_USERNAME: "oh-so-secret"
+      TRANSACTIONAL_POSTGRES_HOSTNAME: ""
+      TRANSACTIONAL_POSTGRES_PORT: 5432
+      TRANSACTIONAL_POSTGRES_PASSWORD: ""
+      REPORTING_POSTGRES_USERNAME: "oh-so-secret"
+      REPORTING_POSTGRES_HOSTNAME: ""
+      REPORTING_POSTGRES_PORT: 5433
+      REPORTING_POSTGRES_PASSWORD: ""
+
 networks:
   default:
     name: dbt-net

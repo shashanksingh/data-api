@@ -8,8 +8,6 @@ app = FastAPI()
 TRINO_HOST = "trino"
 TRINO_PORT = 8080  # default port
 TRINO_USER = ""
-TRINO_CATALOG = "jdbc"
-TRINO_SCHEMA = "jdbc"
 
 
 # Create a Trino connection
@@ -39,4 +37,4 @@ async def execute_query(request: QueryRequest):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=9000)
