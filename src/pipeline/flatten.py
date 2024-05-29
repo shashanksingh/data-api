@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Callable, List
 
+import numpy as np
 import pandas as pd
 import psycopg2 as pg
 from sqlalchemy import create_engine
@@ -257,6 +258,8 @@ for table in DIMENSIONS:
         df_raw = pd.concat([df_raw, df_normalized], axis=1)
 
     df_excluded = df_raw.loc[:, ~df_raw.columns.isin(normalize_columns)]
+    # to make sure we get numbers as int
+    df_excluded.replace([np.nan], [None], inplace=True)
 
     df_excluded.to_sql(
         name=table.target_table_name,
