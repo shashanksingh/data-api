@@ -19,6 +19,7 @@ def get_trino_connection():
 
 env = Environment(loader=FileSystemLoader("./api/templates"))
 
+
 @app.post("/v1/query")
 async def execute_query(request: QueryRequest):
     try:

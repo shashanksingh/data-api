@@ -13,39 +13,43 @@ services:
   postgres:
     ports:
       - "5433:5432"
-    image: postgres:16
+    build:
+      context: .
+      dockerfile: ./docker/postgres/Dockerfile
     container_name: postgres
+    volumes:
+      - ./docker:/data
     environment:
       POSTGRES_USER: dataapi
       POSTGRES_PASSWORD: dataapi
 
-  metastore_db:
-    image: postgres:16
-    hostname: metastore_db
-    environment:
-      POSTGRES_USER: hive
-      POSTGRES_PASSWORD: hive
-      POSTGRES_DB: metastore
+#  metastore_db:
+#    image: postgres:16
+#    hostname: metastore_db
+#    environment:
+#      POSTGRES_USER: hive
+#      POSTGRES_PASSWORD: hive
+#      POSTGRES_DB: metastore
 
-  hive-metastore:
-    hostname: hive-metastore
-    image: 'starburstdata/hive:3.1.2-e.18'
-    ports:
-      - '9083:9083' # Metastore Thrift
-    environment:
-      HIVE_METASTORE_DRIVER: org.postgresql.Driver
-      HIVE_METASTORE_JDBC_URL: jdbc:postgresql://metastore_db:5432/metastore
-      HIVE_METASTORE_USER: hive
-      HIVE_METASTORE_PASSWORD: hive
-      HIVE_METASTORE_WAREHOUSE_DIR: s3://datalake/
-      S3_ENDPOINT: http://minio:9000
-      S3_ACCESS_KEY: minio
-      S3_SECRET_KEY: minio123
-      S3_PATH_STYLE_ACCESS: "true"
-      REGION: ""
-      HIVE_METASTORE_USERS_IN_ADMIN_ROLE: "admin"
-    depends_on:
-      - metastore_db
+#  hive-metastore:
+#    hostname: hive-metastore
+#    image: 'starburstdata/hive:3.1.2-e.18'
+#    ports:
+#      - '9083:9083' # Metastore Thrift
+#    environment:
+#      HIVE_METASTORE_DRIVER: org.postgresql.Driver
+#      HIVE_METASTORE_JDBC_URL: jdbc:postgresql://metastore_db:5432/metastore
+#      HIVE_METASTORE_USER: hive
+#      HIVE_METASTORE_PASSWORD: hive
+#      HIVE_METASTORE_WAREHOUSE_DIR: s3://datalake/
+#      S3_ENDPOINT: http://minio:9000
+#      S3_ACCESS_KEY: minio
+#      S3_SECRET_KEY: minio123
+#      S3_PATH_STYLE_ACCESS: "true"
+#      REGION: ""
+#      HIVE_METASTORE_USERS_IN_ADMIN_ROLE: "admin"
+#    depends_on:
+#      - metastore_db
 
   minio:
     hostname: minio
