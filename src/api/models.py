@@ -7,7 +7,6 @@ class Filter(BaseModel):
     value: str
 
 
-
 class QueryRequest(BaseModel):
     query: str
     filter: Filter = None
