@@ -23,19 +23,26 @@ def get_trino_connection():
 
 env = Environment(loader=FileSystemLoader("templates"))
 
+def list_templates(template_dir):
+    templates = []
+    for dirpath, _, filenames in os.walk(template_dir):
+        for filename in filenames:
+            templates.append(os.path.relpath(os.path.join(dirpath, filename), template_dir))
+    return templates
+
 
 @app.post("/v1/query")
 async def execute_query(request: QueryRequest):
-    try:
-        conn = get_trino_connection()
-        cursor = conn.cursor()
+    # try:
+    conn = get_trino_connection()
+    cursor = conn.cursor()
 
-        template = env.get_template(template_name_or_list=f"{request.query}.sql.jinja")
-        query = template.render(context=request.filter)
-        cursor.execute(query)
+    # template = env.get_template(f"{request.query}.sql.jinja")
+    # query = template.render(context=request.filter)
+    # cursor.execute(query)
 
-        result = cursor.fetchall()
-        cursor.close()
-        return {"result": result}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # result = cursor.fetchall()
+    cursor.close()
+    return {"result": list_templates("templates")}
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
