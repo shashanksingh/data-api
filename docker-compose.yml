@@ -84,7 +84,6 @@ services:
     environment:
       SUPERSET_SECRET_KEY: "oh-so-secret"
 
-
   api:
       build:
         context: .
@@ -117,6 +116,18 @@ services:
       - postgres
       - trino
       - api
+
+  locust:
+      image: locustio/locust
+      ports:
+        - "8089:8089"
+      volumes:
+        - ./src/locust:/mnt/locust
+      command: -f /mnt/locust/main.py --headless -u 10 -r 2 -t 1h
+      depends_on:
+        - postgres
+        - trino
+        - api
 
 networks:
   default:
