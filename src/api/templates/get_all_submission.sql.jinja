@@ -13,4 +13,4 @@ FROM   (SELECT id,
        INNER JOIN dimension_conversion_factor_metadata dcfm
                ON dcfm.id = f.id
        INNER JOIN dimension_conversion_factor_rate_sources dcfrs
-               ON dcfrs.id = dcfm.source_id;
+               ON dcfrs.id = dcfm.source_id

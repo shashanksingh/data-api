@@ -19,17 +19,6 @@ def get_trino_connection():
 
 env = Environment(loader=FileSystemLoader("./api/templates"))
 
-
-def list_templates(template_dir):
-    templates = []
-    for dirpath, _, filenames in os.walk(template_dir):
-        for filename in filenames:
-            templates.append(
-                os.path.relpath(os.path.join(dirpath, filename), template_dir)
-            )
-    return templates
-
-
 @app.post("/v1/query")
 async def execute_query(request: QueryRequest):
     try:
