@@ -92,6 +92,7 @@ services:
         - "6001:80"
       volumes:
         - ./src:/code
+      container_name: api
       environment:
         TRINO_HOST: "trino"
         TRINO_PORT: 8080
@@ -123,7 +124,7 @@ services:
         - "8089:8089"
       volumes:
         - ./src/locust:/mnt/locust
-      command: -f /mnt/locust/main.py --headless -u 10 -r 2 -t 1h
+      command: -f /mnt/locust/main.py  -u 10 -r 2 -t 1h -H http://api:6001
       depends_on:
         - postgres
         - trino
