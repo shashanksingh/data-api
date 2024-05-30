@@ -22,16 +22,16 @@ env = Environment(loader=FileSystemLoader("./api/templates"))
 
 @app.post("/v1/query")
 async def execute_query(request: QueryRequest):
-    try:
-        conn = get_trino_connection()
-        cursor = conn.cursor()
+    # try:
+    conn = get_trino_connection()
+    cursor = conn.cursor()
 
-        template = env.get_template(f"{request.query}.sql.jinja")
-        query = template.render(context=request.filter)
-        cursor.execute(query)
+    template = env.get_template(f"{request.query}.sql.jinja")
+    query = template.render(context=request.params) if hasattr(request, 'params') else template.render()
+    cursor.execute(query)
 
-        result = cursor.fetchall()
-        cursor.close()
-        return {"result": result}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    result = cursor.fetchall()
+    cursor.close()
+    return {"result": result}
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
