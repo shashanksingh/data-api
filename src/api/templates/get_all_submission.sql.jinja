@@ -7,10 +7,10 @@ SELECT f.factor,
        dcfm."sourceMetadata.constituent_gases.co2e_total"
 FROM   (SELECT id,
                factor
-        FROM  dimension_conversion_factor_freight dcff
+        FROM  postgres.public.dimension_conversion_factor_freight dcff
         ORDER  BY date_key DESC
         LIMIT  10) f
-       INNER JOIN dimension_conversion_factor_metadata dcfm
+       INNER JOIN postgres.public.dimension_conversion_factor_metadata dcfm
                ON dcfm.id = f.id
-       INNER JOIN dimension_conversion_factor_rate_sources dcfrs
+       INNER JOIN postgres.public.dimension_conversion_factor_rate_sources dcfrs
                ON dcfrs.id = dcfm.source_id
