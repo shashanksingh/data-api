@@ -4,8 +4,8 @@ import psycopg2 as pg
 from sqlalchemy import create_engine
 import functools
 
-from src.pipeline.dimension import DIMENSIONS
-from src.pipeline.facts import FACTS
+from dimension import DIMENSIONS
+from facts import FACTS
 
 
 def get_submission_timeline_query() -> str:

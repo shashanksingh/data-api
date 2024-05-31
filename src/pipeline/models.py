@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+
+
 @dataclass
 class Table:
     table_name: str

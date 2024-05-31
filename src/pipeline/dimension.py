@@ -1,4 +1,4 @@
-from src.pipeline.models import Table
+from models import Table
 
 DIMENSIONS = {
     Table(
