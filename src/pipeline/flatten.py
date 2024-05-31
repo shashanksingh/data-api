@@ -79,7 +79,7 @@ FACTS = {
     "injuryRate",
     "fuel",
     # "protectedAreas",
-    # "corruptionTraining",
+    # "corruptionTraini ng",
     # "passengerVehicles",
     # "corporateDebtSecurities",
     # "general",
@@ -124,10 +124,9 @@ FACTS = {
     # "UNGCPrinciples",
     # "realEstateFossilFuels",
     # "cSuiteDiversity",
-    # "bod",
-    # "renewableEnergy",
-    # "airPollutants",
-    # "fuel",
+    "renewableEnergy",
+    "airPollutants",
+    "fuel",
 }
 
 
@@ -239,7 +238,11 @@ for table, df in hashmap_of_df.items():
     df_final.drop(
         ["sections", "extracted_data_with_id", "extracted_data"], axis=1
     ).to_sql(
-        name=table, con=engine, if_exists="append", method="multi", schema="public"
+        name=f"fact_{table.lower()}",
+        con=engine,
+        if_exists="append",
+        method="multi",
+        schema="public",
     )
 
 # Dimension
@@ -258,11 +261,9 @@ for table in DIMENSIONS:
         df_raw = pd.concat([df_raw, df_normalized], axis=1)
 
     df_excluded = df_raw.loc[:, ~df_raw.columns.isin(normalize_columns)]
-    # to make sure we get numbers as int
-    df_excluded.replace([np.nan], [None], inplace=True)
 
     df_excluded.to_sql(
-        name=table.target_table_name,
+        name=table.target_table_name.lower(),
         con=engine,
         if_exists="replace",
         method="multi",
