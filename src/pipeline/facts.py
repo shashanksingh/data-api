@@ -1,6 +1,5 @@
 FACTS_TABLE = {
     # "ceoPay",
-    "employeeData",
     "employeeTraining",
     "employeeTurnover",
     # "financial",
@@ -66,9 +65,10 @@ FACTS_TABLE = {
     "renewableEnergy",
     "airPollutants",
     "fuel",
-    "fte",
 }
 
 FACTS_QUESTIONS = {
     "UNGCPrinciples",
+    "employeeData",
+    "fte",
 }

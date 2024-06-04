@@ -129,6 +129,7 @@ hashmap_of_question_df = {
 
 # FACTS WITH TABLE
 for table, df in hashmap_of_table_df.items():
+    print("+++" * 5, table)
     df_normalized = pd.json_normalize(
         df["extracted_data"], record_path="table", meta=["primary_key"]
     )
