@@ -28,11 +28,19 @@ def get_submission_timeline_query() -> str:
         ]
     )
 
-    subquery_for_extracted_data_with_id = " ".join(
+    subquery_for_extracted_table_data_with_id = " ".join(
         [
             f"WHEN sections::jsonb ? '{table}'  THEN Jsonb_insert( sections::jsonb , '{{ {table}, primary_key}}', "
             f"To_jsonb(id), true )"
             for table in FACTS_TABLE
+        ]
+    )
+
+    subquery_for_extracted_question_data_with_id = " ".join(
+        [
+            f"WHEN sections::jsonb ? '{question}'  THEN Jsonb_insert( sections::jsonb , '{{ {question}, primary_key}}', "
+            f"To_jsonb(id), true )"
+            for question in FACTS_QUESTIONS
         ]
     )
 
@@ -51,9 +59,14 @@ def get_submission_timeline_query() -> str:
                 ELSE NULL
             END AS type_of_question_data,
             CASE
-               {subquery_for_extracted_data_with_id}
+               {subquery_for_extracted_table_data_with_id}
                 ELSE NULL
-            END AS extracted_data_with_id
+            END AS extracted_data_with_id,
+            CASE
+               {subquery_for_extracted_question_data_with_id}
+                ELSE NULL
+            END AS extracted_question_data_with_id
+            
         FROM
             submission_timelines
     )
@@ -114,40 +127,53 @@ hashmap_of_question_df = {
     table: df_raw[df_raw["type_of_table_data"] == table] for table in FACTS_QUESTIONS
 }
 
-for hashmap in [hashmap_of_table_df, hashmap_of_question_df]:
-    for table, df in hashmap.items():
-        df_normalized = pd.json_normalize(
-            df["extracted_data"], record_path="table", meta=["primary_key"]
-        )
+# FACTS WITH TABLE
+for table, df in hashmap_of_table_df.items():
+    df_normalized = pd.json_normalize(
+        df["extracted_data"], record_path="table", meta=["primary_key"]
+    )
 
-        try:
-            df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
-        except Exception as e:
-            print("===" * 10, table, "===" * 10)
-            print("[Exception]", str(e))
-            print("[DF]", df)
-            print("[DF_NORMALIZED]", df_normalized)
-            print("===" * 10)
-            continue
+    try:
+        df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
+    except Exception as e:
+        print("===" * 10, table, "===" * 10)
+        print("[Exception][TABLE]", str(e))
+        print("[DF]", df)
+        print("[DF_NORMALIZED]", df_normalized)
+        print("===" * 10)
+        continue
 
-        username = "dataapi"
-        password = "dataapi"
-        host = "localhost"
-        port = "5433"
+    username = "dataapi"
+    password = "dataapi"
+    host = "localhost"
+    port = "5433"
 
-        engine = create_engine(
-            f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
-        )
+    engine = create_engine(
+        f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
+    )
 
-        df_final.drop(
-            ["sections", "extracted_data_with_id", "extracted_data"], axis=1
-        ).to_sql(
-            name=f"fact_{table.lower()}",
-            con=engine,
-            if_exists="append",
-            method="multi",
-            schema="public",
-        )
+    df_final.drop(
+        ["sections", "extracted_data_with_id", "extracted_data"], axis=1
+    ).to_sql(
+        name=f"fact_{table.lower()}",
+        con=engine,
+        if_exists="append",
+        method="multi",
+        schema="public",
+    )
+
+# FACTS WITH QUESTIONS
+for table, df in hashmap_of_question_df.items():
+    df_normalized = pd.json_normalize(df["sections"])
+    try:
+        df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
+    except Exception as e:
+        print("===" * 10, table, "===" * 10)
+        print("[Exception][QUESTIONS]", str(e))
+        print("[DF]", df)
+        print("[DF_NORMALIZED]", df_normalized)
+        print("===" * 10)
+        continue
 
 # Dimension
 for table in DIMENSIONS:
