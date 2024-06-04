@@ -5,18 +5,26 @@ from sqlalchemy import create_engine
 import functools
 
 from dimension import DIMENSIONS
-from facts import FACTS
+from facts import FACTS_TABLE, FACTS_QUESTIONS
 
 
 def get_submission_timeline_query() -> str:
-    subquery_for_type = " ".join(
-        [f"WHEN sections::jsonb ? '{table}' THEN '{table}'" for table in FACTS]
+    # handle question vs table split
+    subquery_for_table_type = " ".join(
+        [f"WHEN sections::jsonb ? '{table}' THEN '{table}'" for table in FACTS_TABLE]
+    )
+
+    subquery_for_question_type = " ".join(
+        [
+            f"WHEN sections::jsonb ? '{table}' THEN '{table}'"
+            for table in FACTS_QUESTIONS
+        ]
     )
 
     subquery_for_extracted_data = " ".join(
         [
             f"WHEN extracted_data_with_id::jsonb ? '{table}'  THEN extracted_data_with_id ->'{table}' "
-            for table in FACTS
+            for table in FACTS_TABLE
         ]
     )
 
@@ -24,7 +32,7 @@ def get_submission_timeline_query() -> str:
         [
             f"WHEN sections::jsonb ? '{table}'  THEN Jsonb_insert( sections::jsonb , '{{ {table}, primary_key}}', "
             f"To_jsonb(id), true )"
-            for table in FACTS
+            for table in FACTS_TABLE
         ]
     )
 
@@ -36,9 +44,12 @@ def get_submission_timeline_query() -> str:
             sections -> 'dates' -> 'date' ->> 'start' AS start_date,
             sections -> 'dates' -> 'date' ->> 'end' AS end_date,
             sections -> 'siteId' AS site_id,
-            CASE {subquery_for_type}
+            CASE {subquery_for_table_type}
                 ELSE NULL
-            END AS type_of_data,
+            END AS type_of_table_data,
+            CASE {subquery_for_question_type}
+                ELSE NULL
+            END AS type_of_question_data,
             CASE
                {subquery_for_extracted_data_with_id}
                 ELSE NULL
@@ -92,44 +103,51 @@ def get_unstructured_columns_types_from_tables(table_name: str) -> List[str]:
 df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
 
 # temporary
-df_raw.dropna(subset=["type_of_data"], inplace=True)
+df_raw_table_data = df_raw.dropna(subset=["type_of_table_data"])
+df_raw_question_data = df_raw.dropna(subset=["type_of_question_data"])
 
 # FACTS
-hashmap_of_df = {table: df_raw[df_raw["type_of_data"] == table] for table in FACTS}
+hashmap_of_table_df = {
+    table: df_raw[df_raw["type_of_table_data"] == table] for table in FACTS_TABLE
+}
+hashmap_of_question_df = {
+    table: df_raw[df_raw["type_of_table_data"] == table] for table in FACTS_QUESTIONS
+}
 
-for table, df in hashmap_of_df.items():
-    df_normalized = pd.json_normalize(
-        df["extracted_data"], record_path="table", meta=["primary_key"]
-    )
+for hashmap in [hashmap_of_table_df, hashmap_of_question_df]:
+    for table, df in hashmap.items():
+        df_normalized = pd.json_normalize(
+            df["extracted_data"], record_path="table", meta=["primary_key"]
+        )
 
-    try:
-        df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
-    except Exception as e:
-        print("===" * 10, table, "===" * 10)
-        print("[Exception]", str(e))
-        print("[DF]", df)
-        print("[DF_NORMALIZED]", df_normalized)
-        print("===" * 10)
-        continue
+        try:
+            df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
+        except Exception as e:
+            print("===" * 10, table, "===" * 10)
+            print("[Exception]", str(e))
+            print("[DF]", df)
+            print("[DF_NORMALIZED]", df_normalized)
+            print("===" * 10)
+            continue
 
-    username = "dataapi"
-    password = "dataapi"
-    host = "localhost"
-    port = "5433"
+        username = "dataapi"
+        password = "dataapi"
+        host = "localhost"
+        port = "5433"
 
-    engine = create_engine(
-        f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
-    )
+        engine = create_engine(
+            f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
+        )
 
-    df_final.drop(
-        ["sections", "extracted_data_with_id", "extracted_data"], axis=1
-    ).to_sql(
-        name=f"fact_{table.lower()}",
-        con=engine,
-        if_exists="append",
-        method="multi",
-        schema="public",
-    )
+        df_final.drop(
+            ["sections", "extracted_data_with_id", "extracted_data"], axis=1
+        ).to_sql(
+            name=f"fact_{table.lower()}",
+            con=engine,
+            if_exists="append",
+            method="multi",
+            schema="public",
+        )
 
 # Dimension
 for table in DIMENSIONS:

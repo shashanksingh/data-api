@@ -1,4 +1,4 @@
-FACTS = {
+FACTS_TABLE = {
     # "ceoPay",
     "employeeData",
     "employeeTraining",
@@ -61,10 +61,14 @@ FACTS = {
     # "biodiversitySensitiveAreas",
     # "hazardousWaste",
     # "OECDGuidelinesMultinational",
-    # "UNGCPrinciples",
     # "realEstateFossilFuels",
     # "cSuiteDiversity",
     "renewableEnergy",
     "airPollutants",
     "fuel",
+    "fte",
+}
+
+FACTS_QUESTIONS = {
+    "UNGCPrinciples",
 }
