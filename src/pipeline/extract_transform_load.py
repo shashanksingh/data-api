@@ -81,6 +81,7 @@ def get_submission_timeline_query() -> str:
         """
 
 
+
 def get_fullload_query(table: str) -> str:
     return f"SELECT * from {table}"
 
@@ -115,6 +116,7 @@ def get_unstructured_columns_types_from_tables(table_name: str) -> List[str]:
 # submission timeline
 df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
 
+print(df_raw)
 # temporary
 df_raw_table_data = df_raw.dropna(subset=["type_of_table_data"])
 df_raw_question_data = df_raw.dropna(subset=["type_of_question_data"])
@@ -124,12 +126,11 @@ hashmap_of_table_df = {
     table: df_raw[df_raw["type_of_table_data"] == table] for table in FACTS_TABLE
 }
 hashmap_of_question_df = {
-    table: df_raw[df_raw["type_of_table_data"] == table] for table in FACTS_QUESTIONS
+    table: df_raw[df_raw["type_of_question_data"] == table] for table in FACTS_QUESTIONS
 }
 
 # FACTS WITH TABLE
 for table, df in hashmap_of_table_df.items():
-    print("+++" * 5, table)
     df_normalized = pd.json_normalize(
         df["extracted_data"], record_path="table", meta=["primary_key"]
     )
@@ -165,7 +166,8 @@ for table, df in hashmap_of_table_df.items():
 
 # FACTS WITH QUESTIONS
 for table, df in hashmap_of_question_df.items():
-    df_normalized = pd.json_normalize(df["sections"])
+    print("===" * 10, table, "===" * 10)
+    df_normalized = pd.json_normalize(df["extracted_question_data_with_id"])
     try:
         df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
     except Exception as e:
@@ -175,6 +177,16 @@ for table, df in hashmap_of_question_df.items():
         print("[DF_NORMALIZED]", df_normalized)
         print("===" * 10)
         continue
+
+    df_final.drop(
+        ["sections", "extracted_data_with_id", "extracted_data"], axis=1
+    ).to_sql(
+        name=f"fact_{table.lower()}",
+        con=engine,
+        if_exists="append",
+        method="multi",
+        schema="public",
+    )
 
 # Dimension
 for table in DIMENSIONS:
