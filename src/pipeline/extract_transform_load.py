@@ -102,7 +102,15 @@ for table, df in hashmap_of_df.items():
         df["extracted_data"], record_path="table", meta=["primary_key"]
     )
 
-    df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
+    try:
+        df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
+    except Exception as e:
+        print("===" * 10, table, "===" * 10)
+        print("[Exception]", str(e))
+        print("[DF]", df)
+        print("[DF_NORMALIZED]", df_normalized)
+        print("===" * 10)
+        continue
 
     username = "dataapi"
     password = "dataapi"
