@@ -3,7 +3,7 @@ from typing import List, Literal, Dict
 
 # TODO -> Using AST module/TOML parser populate these constants in CI/CD
 TEMPLATES_NAMES = Literal["get_all_submission", "get_all_fuel","get_fte_per_year"]
-PARAMS_NAME_LITERAL = {"limit",}
+PARAMS_NAME_LITERAL = {"limit", "sites"}
 
 
 
