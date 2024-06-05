@@ -10,6 +10,7 @@ from extract.queries import (
     get_submission_timeline_query,
     get_fullload_query,
     get_unstructured_columns_types_from_tables,
+    get_submission_attributes_query,
 )
 from engine import get_engine
 from constants import units
@@ -22,7 +23,27 @@ def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
     return response
 
 
-# submission timeline
+# source : submission attribute calculator
+df_sac_raw = get_data_from_db(sql_callback=get_submission_attributes_query)
+df_sac_raw.drop(["submission"], axis=1, inplace=True)
+username = "dataapi"
+password = "dataapi"
+host = "localhost"
+port = "5433"
+
+engine = create_engine(
+    f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
+)
+df_sac_raw.to_sql(
+    name=f"fact_precalculated_submissions",
+    con=engine,
+    if_exists="append",
+    method="multi",
+    schema="public",
+)
+
+print(pd.pivot(data=df_sac_raw, columns=["record_id"]))
+# source : submission timeline
 df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
 
 # temporary

@@ -152,5 +152,5 @@ SELECT
 FROM 
     formatted_data fd,
     LATERAL jsonb_to_recordset(fd.outer_array) 
-    AS record(id text, value text, label text, type text);
+    AS record(id text, value text, label text, type text) limit 100;
 """

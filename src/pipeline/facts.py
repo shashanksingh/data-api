@@ -16,12 +16,7 @@ FACTS_TABLE = {
     # "BOD",
     # "injuryRate",
     # "fuel",
-    # "protectedAreas",
-    # "corruptionTraining",
-    # "passengerVehicles",
-    # "corporateDebtSecurities",
-    # "general",
-    # "renewableEnergyProduction",
+    "renewableEnergyProduction",
     # "electricityUsage",
     # "staffCommuting",
     # "emissionsToWater",
@@ -71,6 +66,10 @@ FACTS_QUESTIONS = {
     "cSuiteDiversity",
     # "passengerVehicles",
     "controversialWeapons",
+    "general",
+    "protectedAreas",
+    "corporateDebtSecurities",
+    "corruptionTraining",
 }
 
 FACTS_DATAREQUEST = {"submission_attribute_calculations"}
