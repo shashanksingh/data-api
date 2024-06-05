@@ -1,35 +1,43 @@
-WITH ranked_entries AS (
-    SELECT
-        fte.*,
-        ROW_NUMBER() OVER (PARTITION BY fte.site_id, EXTRACT(YEAR FROM fte.start) ORDER BY fte.start ASC) AS rn_start,
-        ROW_NUMBER() OVER (PARTITION BY fte.site_id, EXTRACT(YEAR FROM fte.start) ORDER BY fte.start DESC) AS rn_end
-    FROM
-        postgres.public.fact_fte fte
-),
-latest_sites AS (
-    SELECT
-        id,
-        name,
-        ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn
-    FROM
-        postgres.public.dimension_public_sites
-)
-SELECT
-    ranked_start.site_id,
-    sites.name AS site_name,
-    EXTRACT(YEAR FROM ranked_start.start) AS year,
-    ranked_start."fte.questions.current" AS start_of_year_fte,
-    ranked_end."fte.questions.current" AS end_of_year_fte
+{#WITH ranked_entries AS (#}
+{#    SELECT#}
+{#        fte.*,#}
+{#        ROW_NUMBER() OVER (PARTITION BY fte.site_id, EXTRACT(YEAR FROM fte.start) ORDER BY fte.start ASC) AS rn_start,#}
+{#        ROW_NUMBER() OVER (PARTITION BY fte.site_id, EXTRACT(YEAR FROM fte.start) ORDER BY fte.start DESC) AS rn_end#}
+{#    FROM#}
+{#        postgres.public.fact_fte fte#}
+{#),#}
+{#latest_sites AS (#}
+{#    SELECT#}
+{#        id,#}
+{#        name,#}
+{#        ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn#}
+{#    FROM#}
+{#        postgres.public.dimension_public_sites#}
+{#)#}
+{#SELECT#}
+{#    ranked_start.site_id,#}
+{#    sites.name AS site_name,#}
+{#    EXTRACT(YEAR FROM ranked_start.start) AS year,#}
+{#    ranked_start."fte.questions.current" AS start_of_year_fte,#}
+{#    ranked_end."fte.questions.current" AS end_of_year_fte#}
+{#FROM#}
+{#    ranked_entries ranked_start#}
+{#JOIN#}
+{#    ranked_entries ranked_end ON ranked_start.site_id = ranked_end.site_id AND EXTRACT(YEAR FROM ranked_start.start) = EXTRACT(YEAR FROM ranked_end.start)#}
+{#JOIN#}
+{#    latest_sites sites ON ranked_start.site_id = sites.id AND sites.rn = 1#}
+{#WHERE#}
+{#    ranked_start.rn_start = 1#}
+{#    AND ranked_end.rn_end = 1#}
+ SELECT DISTINCT
+    site_id,
+    FIRST_VALUE("start") OVER (PARTITION BY site_id ORDER BY start DESC) AS last_start_date,
+    FIRST_VALUE(f."fte.questions.past") OVER (PARTITION BY site_id ORDER BY start_date DESC) AS last_fte_questions_past,
+    FIRST_VALUE(f."fte.questions.current") OVER (PARTITION BY site_id ORDER BY start_date DESC) AS last_fte_questions_current
 FROM
-    ranked_entries ranked_start
-JOIN
-    ranked_entries ranked_end ON ranked_start.site_id = ranked_end.site_id AND EXTRACT(YEAR FROM ranked_start.start) = EXTRACT(YEAR FROM ranked_end.start)
-JOIN
-    latest_sites sites ON ranked_start.site_id = sites.id AND sites.rn = 1
-WHERE
-    ranked_start.rn_start = 1
-    AND ranked_end.rn_end = 1
-    {% if context.sites %}
-    AND sites.id IN ({{  context.sites}})
-    {% endif %}
-{# AND sites.id in ('31558b4b-9cd6-4306-8466-3d08efee078b','ea43902f-6968-4065-a135-013c5b15eaf8')#}
+    postgres.public.fact_fte as f
+JOIN postgres.public.dimension_public_sites s
+ON s.id = f.site_id
+{% if context.sites %}
+WHERE s.id IN ({{  context.sites}})
+{% endif %}
