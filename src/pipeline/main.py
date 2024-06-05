@@ -1,11 +1,11 @@
-from typing import Any, Callable, List
+from typing import Callable, List
 import pandas as pd
 from sqlalchemy import create_engine
 import functools
 import json
 from dimension import DIMENSIONS
 from facts import FACTS_TABLE, FACTS_QUESTIONS
-from queries import (
+from extract.queries import (
     get_submission_timeline_query,
     get_fullload_query,
     get_unstructured_columns_types_from_tables,
