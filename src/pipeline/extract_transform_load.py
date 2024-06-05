@@ -3,7 +3,7 @@ import pandas as pd
 import psycopg2 as pg
 from sqlalchemy import create_engine
 import functools
-
+import json
 from dimension import DIMENSIONS
 from facts import FACTS_TABLE, FACTS_QUESTIONS
 
@@ -115,7 +115,6 @@ def get_unstructured_columns_types_from_tables(table_name: str) -> List[str]:
 # submission timeline
 df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
 
-print(df_raw)
 # temporary
 df_raw_table_data = df_raw.dropna(subset=["type_of_table_data"])
 df_raw_question_data = df_raw.dropna(subset=["type_of_question_data"])
@@ -166,8 +165,6 @@ for table, df in hashmap_of_table_df.items():
 
 # FACTS WITH QUESTIONS
 for question, df in hashmap_of_question_df.items():
-    print("===" * 10, question, "===" * 10)
-    df.to_csv(f"{question}.csv", index=False)
     df_normalized = pd.json_normalize(df["extracted_question_data_with_id"])
     try:
         df_final = pd.merge(
@@ -185,15 +182,21 @@ for question, df in hashmap_of_question_df.items():
         print("===" * 10)
         continue
 
-    df_final.drop(
+    df_final = df_final.drop(
         [
             "sections",
             "extracted_data_with_id",
             "extracted_data",
             "extracted_question_data_with_id",
+            "sourceMaterial.file",
         ],
         axis=1,
-    ).to_sql(
+    )
+
+    # Just in offchance we have more object struct
+    df_final = df_final.applymap(lambda x: json.dumps(x) if isinstance(x, dict) else x)
+
+    df_final.to_sql(
         name=f"fact_{question.lower()}",
         con=engine,
         if_exists="append",

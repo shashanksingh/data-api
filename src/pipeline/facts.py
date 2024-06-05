@@ -68,7 +68,7 @@ FACTS_TABLE = {
 }
 
 FACTS_QUESTIONS = {
-    # "UNGCPrinciples",
+    "UNGCPrinciples",
     # "employeeData",
     "fte",
 }
