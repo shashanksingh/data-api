@@ -81,7 +81,6 @@ def get_submission_timeline_query() -> str:
         """
 
 
-
 def get_fullload_query(table: str) -> str:
     return f"SELECT * from {table}"
 
@@ -126,7 +125,8 @@ hashmap_of_table_df = {
     table: df_raw[df_raw["type_of_table_data"] == table] for table in FACTS_TABLE
 }
 hashmap_of_question_df = {
-    table: df_raw[df_raw["type_of_question_data"] == table] for table in FACTS_QUESTIONS
+    question: df_raw[df_raw["type_of_question_data"] == question]
+    for question in FACTS_QUESTIONS
 }
 
 # FACTS WITH TABLE
@@ -165,23 +165,36 @@ for table, df in hashmap_of_table_df.items():
     )
 
 # FACTS WITH QUESTIONS
-for table, df in hashmap_of_question_df.items():
-    print("===" * 10, table, "===" * 10)
+for question, df in hashmap_of_question_df.items():
+    print("===" * 10, question, "===" * 10)
+    df.to_csv(f"{question}.csv", index=False)
     df_normalized = pd.json_normalize(df["extracted_question_data_with_id"])
     try:
-        df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
+        df_final = pd.merge(
+            df,
+            df_normalized,
+            left_on="primary_key",
+            right_on=f"{question}.primary_key",
+            how="left",
+        )
     except Exception as e:
-        print("===" * 10, table, "===" * 10)
+        print("===" * 10, question, "===" * 10)
         print("[Exception][QUESTIONS]", str(e))
-        print("[DF]", df)
-        print("[DF_NORMALIZED]", df_normalized)
+        print("[DF]", df.columns)
+        print("[DF_NORMALIZED]", df_normalized.columns)
         print("===" * 10)
         continue
 
     df_final.drop(
-        ["sections", "extracted_data_with_id", "extracted_data"], axis=1
+        [
+            "sections",
+            "extracted_data_with_id",
+            "extracted_data",
+            "extracted_question_data_with_id",
+        ],
+        axis=1,
     ).to_sql(
-        name=f"fact_{table.lower()}",
+        name=f"fact_{question.lower()}",
         con=engine,
         if_exists="append",
         method="multi",

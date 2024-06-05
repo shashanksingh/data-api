@@ -1,7 +1,7 @@
 FACTS_TABLE = {
     # "ceoPay",
-    "employeeTraining",
-    # "employeeTurnover",
+    # "employeeTraining",
+    "employeeTurnover",
     # # "financial",
     # # "governanceStandards",
     # # "humanRightsAssessment",
@@ -68,7 +68,7 @@ FACTS_TABLE = {
 }
 
 FACTS_QUESTIONS = {
-    "UNGCPrinciples",
-    "employeeData",
+    # "UNGCPrinciples",
+    # "employeeData",
     "fte",
 }
