@@ -1,6 +1,9 @@
 from typing import List
 
+import pandas as pd
+
 from facts import FACTS_TABLE, FACTS_QUESTIONS
+from engine import get_engine
 
 
 def get_submission_timeline_query() -> str:
