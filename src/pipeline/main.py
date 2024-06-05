@@ -16,7 +16,10 @@ from constants import units
 
 
 def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
-    return pd.read_sql(sql=sql_callback(), con=get_engine())
+    print("[get_data_from_db] Get Data")
+    response = pd.read_sql(sql=sql_callback(), con=get_engine())
+    print("[get_data_from_db] Data Recieved From DB", response.shape)
+    return response
 
 
 # submission timeline
@@ -37,6 +40,7 @@ hashmap_of_question_df = {
 
 # FACTS WITH TABLE
 for table, df in hashmap_of_table_df.items():
+    print(">>" * 10, table)
     df_normalized = pd.json_normalize(
         df["extracted_data"], record_path="table", meta=["primary_key"]
     )
@@ -61,7 +65,13 @@ for table, df in hashmap_of_table_df.items():
     )
 
     df_final.drop(
-        ["sections", "extracted_data_with_id", "extracted_data"], axis=1
+        [
+            "sections",
+            "extracted_data_with_id",
+            "extracted_data",
+            "extracted_question_data_with_id",
+        ],
+        axis=1,
     ).to_sql(
         name=f"fact_{table.lower()}",
         con=engine,
@@ -72,6 +82,7 @@ for table, df in hashmap_of_table_df.items():
 
 # FACTS WITH QUESTIONS
 for question, df in hashmap_of_question_df.items():
+    print(">>" * 10, question)
     df_normalized = pd.json_normalize(df["extracted_question_data_with_id"])
     try:
         df_final = pd.merge(
@@ -89,16 +100,17 @@ for question, df in hashmap_of_question_df.items():
         print("===" * 10)
         continue
 
-    df_final = df_final.drop(
+    existing_cols = df_final.columns.intersection(
         [
             "sections",
             "extracted_data_with_id",
             "extracted_data",
             "extracted_question_data_with_id",
             "sourceMaterial.file",
-        ],
-        axis=1,
+        ]
     )
+
+    df_final = df_final.drop(existing_cols, axis=1)
 
     # Just in offchance we have more object struct
     df_final = df_final.applymap(lambda x: json.dumps(x) if isinstance(x, dict) else x)
@@ -114,9 +126,7 @@ for question, df in hashmap_of_question_df.items():
 # Dimension - Unit
 units_dict: Dict = {key: asdict(value) for key, value in units.items()}
 df_units: pd.DataFrame = pd.DataFrame.from_dict(units_dict, orient="index")
-df_units.to_sql(
-    "dimension_units", con=engine, if_exists="append", schema="public"
-)
+df_units.to_sql("dimension_units", con=engine, if_exists="append", schema="public")
 
 # Dimension - Table
 for table in DIMENSIONS:

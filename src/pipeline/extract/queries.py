@@ -92,3 +92,6 @@ def get_unstructured_columns_types_from_tables(table_name: str) -> List[str]:
 
     # Execute the query and fetch the results
     return pd.read_sql_query(json_columns_query, get_engine())["column_name"].tolist()
+
+
+# def
