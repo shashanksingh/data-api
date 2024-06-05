@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from typing import Callable, List
 import pandas as pd
 from sqlalchemy import create_engine
@@ -11,6 +12,7 @@ from extract.queries import (
     get_unstructured_columns_types_from_tables,
 )
 from engine import get_engine
+from constants import units
 
 
 def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
@@ -110,6 +112,12 @@ for question, df in hashmap_of_question_df.items():
     )
 
 # Dimension
+units_dict = {key: asdict(value) | {"id": key} for key, value in units.items()}
+
+pd.DataFrame.from_dict(units_dict, orient="index").to_sql(
+    "dimension_units", con=engine, if_exists="append", schema="public"
+)
+
 for table in DIMENSIONS:
     partial_callback = functools.partial(
         get_fullload_query, table=f"{table.schema_name}.{table.table_name}"

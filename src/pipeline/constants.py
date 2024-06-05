@@ -9,7 +9,7 @@ class Unit:
     conversion: str = None
 
 
-hashmap_of_units = {
+units = {
     "d11e91ed-3fb3-40af-91a5-514e02103866": Unit(name="KWH_UNIT", label="kWh"),
     "60799459-2fd4-4998-8b10-59066b386102": Unit(
         name="MWH_UNIT",
