@@ -1,0 +1,16 @@
+ WITH ranked_entries AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (PARTITION BY site_id, EXTRACT(YEAR FROM start) ORDER BY start DESC) AS rn
+    FROM
+        postgres.public.fact_fte
+)
+SELECT
+    site_id,
+    EXTRACT(YEAR FROM start) AS start_year,
+    "fte.questions.past",
+    "fte.questions.current"
+FROM
+    ranked_entries
+WHERE
+    rn = 1;

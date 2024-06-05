@@ -26,7 +26,7 @@ FACTS_TABLE = {
     # "electricityUsage",
     # # "staffCommuting",
     # # "emissionsToWater",
-    # "hotels",
+    "hotels",
     # # "ombudsman",
     # # "employeeTraining",
     # # "water",
@@ -64,11 +64,11 @@ FACTS_TABLE = {
     # # "cSuiteDiversity",
     # "renewableEnergy",
     # "airPollutants",
-    # "fuel",
+    "fuel",
 }
 
 FACTS_QUESTIONS = {
     "UNGCPrinciples",
-    # "employeeData",
+    "employeeData",
     "fte",
 }
