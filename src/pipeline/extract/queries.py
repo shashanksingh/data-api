@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 
@@ -6,17 +6,32 @@ from facts import FACTS_TABLE, FACTS_QUESTIONS
 from engine import get_engine
 
 
-def get_submission_timeline_query() -> str:
+def get_subquery_for_submission_type_parsing_macro(
+    name_of_submission_column: str,
+) -> Union[str, str]:
     # handle question vs table split
     subquery_for_table_type = " ".join(
-        [f"WHEN sections::jsonb ? '{table}' THEN '{table}'" for table in FACTS_TABLE]
+        [
+            f"WHEN {name_of_submission_column}::jsonb ? '{table}' THEN '{table}'"
+            for table in FACTS_TABLE
+        ]
     )
 
     subquery_for_question_type = " ".join(
         [
-            f"WHEN sections::jsonb ? '{table}' THEN '{table}'"
+            f"WHEN {name_of_submission_column}::jsonb ? '{table}' THEN '{table}'"
             for table in FACTS_QUESTIONS
         ]
+    )
+    return subquery_for_table_type, subquery_for_question_type
+
+
+def get_submission_timeline_query() -> str:
+    # handle question vs table split
+    subquery_for_table_type, subquery_for_question_type = (
+        get_subquery_for_submission_type_parsing_macro(
+            name_of_submission_column="sections"
+        )
     )
 
     subquery_for_extracted_data = " ".join(
@@ -95,7 +110,14 @@ def get_unstructured_columns_types_from_tables(table_name: str) -> List[str]:
 
 
 def get_submission_attributes_query() -> str:
-    return """ 
+    # handle question vs table split
+    subquery_for_table_type, subquery_for_question_type = (
+        get_subquery_for_submission_type_parsing_macro(
+            name_of_submission_column="submission"
+        )
+    )
+
+    return f""" 
 WITH formatted_data AS (
     SELECT 
         id,
@@ -117,6 +139,12 @@ SELECT
     fd.author_user_id,
     fd.version,
     fd.submission,
+    CASE {subquery_for_table_type}
+                ELSE NULL
+    END AS type_of_table_data,
+    CASE {subquery_for_question_type}
+                ELSE NULL
+    END AS type_of_question_data,
     record.id AS record_id,
     record.value AS record_value,
     record.label AS record_label,
