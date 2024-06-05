@@ -94,4 +94,35 @@ def get_unstructured_columns_types_from_tables(table_name: str) -> List[str]:
     return pd.read_sql_query(json_columns_query, get_engine())["column_name"].tolist()
 
 
-# def
+def get_submission_attributes_query() -> str:
+    return """ 
+WITH formatted_data AS (
+    SELECT 
+        id,
+        submission_timeline_id,
+        author_user_id,
+        version,
+        submission,
+        jsonb_array_elements(calculation::jsonb) AS outer_array
+    FROM 
+        submission_attribute_calculations
+)
+SELECT 
+    submission_timeline_id as primary_key,
+    fd.submission -> 'dates' -> 'date' ->> 'start' AS start_date,
+    fd.submission -> 'dates' -> 'date' ->> 'end' AS end_date,
+    fd.submission -> 'siteId' AS site_id,
+    fd.id,
+    fd.submission_timeline_id,
+    fd.author_user_id,
+    fd.version,
+    fd.submission,
+    record.id AS record_id,
+    record.value AS record_value,
+    record.label AS record_label,
+    record.type AS record_type
+FROM 
+    formatted_data fd,
+    LATERAL jsonb_to_recordset(fd.outer_array) 
+    AS record(id text, value text, label text, type text);
+"""
