@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class Unit:
     name: str
     label: str
-    convertTo: str = None
+    convert_to: str = None
     conversion: str = None
 
 
@@ -14,14 +14,14 @@ units = {
     "60799459-2fd4-4998-8b10-59066b386102": Unit(
         name="MWH_UNIT",
         label="MWh",
-        convertTo="KWH_UNIT",
+        convert_to="KWH_UNIT",
         conversion="increaseValue1000",
     ),
     "477522a8-76fd-49da-a0b6-9867bdc39cac": Unit(name="LITRES_UNIT", label="L"),
     "c0a76f6c-86a3-4333-b45c-6cf04cccddf4": Unit(
         name="KILOLITRES_UNIT",
         label="kL",
-        convertTo="LITRES_UNIT",
+        convert_to="LITRES_UNIT",
         conversion="increaseValue1000",
     ),
     "bc0e42d7-0dfe-494b-b8ea-41990f2c821c": Unit(
@@ -30,7 +30,7 @@ units = {
     "6d7a7901-ce71-49d7-b3d0-38036b69635e": Unit(
         name="GALLONS_UNIT",
         label="US Liquid Gallons",
-        convertTo="LITRES_UNIT",
+        convert_to="LITRES_UNIT",
         conversion="usGallonsToLitres",
     ),
     "7abe5fe6-f713-44c4-8f91-aa76061ed4ee": Unit(name="KG_UNIT", label="Kg"),
@@ -44,13 +44,13 @@ units = {
     "5275ea32-58d0-42b4-afc7-8f7f5f423dd7": Unit(
         name="MILES_UNIT",
         label="Mi",
-        convertTo="KM_UNIT",
+        convert_to="KM_UNIT",
         conversion="milesToKm",
     ),
     "42c7cd4f-1ce4-479b-b9c9-009f3d9317c2": Unit(
         name="PASSENGER_MILES_UNIT",
         label="Mi",
-        convertTo="PASSENGER_KM_UNIT",
+        convert_to="PASSENGER_KM_UNIT",
         conversion="milesToKm",
     ),
     "da30e86d-1afa-4b73-bf94-580c64bb4acf": Unit(name="MEGALITRES_UNIT", label="ML"),

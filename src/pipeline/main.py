@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from typing import Callable, List
+from typing import Callable, List, Dict
 import pandas as pd
 from sqlalchemy import create_engine
 import functools
@@ -111,13 +111,14 @@ for question, df in hashmap_of_question_df.items():
         schema="public",
     )
 
-# Dimension
-units_dict = {key: asdict(value) | {"id": key} for key, value in units.items()}
-
-pd.DataFrame.from_dict(units_dict, orient="index").to_sql(
+# Dimension - Unit
+units_dict: Dict = {key: asdict(value) for key, value in units.items()}
+df_units: pd.DataFrame = pd.DataFrame.from_dict(units_dict, orient="index")
+df_units.to_sql(
     "dimension_units", con=engine, if_exists="append", schema="public"
 )
 
+# Dimension - Table
 for table in DIMENSIONS:
     partial_callback = functools.partial(
         get_fullload_query, table=f"{table.schema_name}.{table.table_name}"
