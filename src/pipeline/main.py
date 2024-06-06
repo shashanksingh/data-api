@@ -14,6 +14,7 @@ from extract.queries import (
 )
 from engine import get_engine
 from constants import units
+from helper import drop_columns_if_exists
 
 
 def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
@@ -40,6 +41,7 @@ df_sac_raw.to_sql(
     if_exists="append",
     method="multi",
     schema="public",
+    chunksize=100,
 )
 
 print(pd.pivot(data=df_sac_raw, columns=["record_id"]))
@@ -121,17 +123,16 @@ for question, df in hashmap_of_question_df.items():
         print("===" * 10)
         continue
 
-    existing_cols = df_final.columns.intersection(
-        [
+    df_final = drop_columns_if_exists(
+        df=df_final,
+        columns=[
             "sections",
             "extracted_data_with_id",
             "extracted_data",
             "extracted_question_data_with_id",
             "sourceMaterial.file",
-        ]
+        ],
     )
-
-    df_final = df_final.drop(existing_cols, axis=1)
 
     # Just in offchance we have more object struct
     df_final = df_final.applymap(lambda x: json.dumps(x) if isinstance(x, dict) else x)

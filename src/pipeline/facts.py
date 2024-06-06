@@ -66,7 +66,7 @@ FACTS_QUESTIONS = {
     "cSuiteDiversity",
     # "passengerVehicles",
     "controversialWeapons",
-    "general",
+    # "general",
     "protectedAreas",
     "corporateDebtSecurities",
     "corruptionTraining",
