@@ -44,7 +44,18 @@ df_sac_raw.to_sql(
     chunksize=100,
 )
 
-print(pd.pivot(data=df_sac_raw, columns=["record_id"]))
+# df_pivoted = pd.pivot(data=df_sac_raw, columns=["record_id"])
+# print("[Pivoted]",df_pivoted.shape)
+#
+# df_pivoted.to_sql(
+#     name=f"fact_precalculated_submissions_pivoted",
+#     con=engine,
+#     if_exists="append",
+#     method="multi",
+#     schema="public",
+#     chunksize=100,
+# )
+
 # source : submission timeline
 df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
 
