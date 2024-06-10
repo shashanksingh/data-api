@@ -154,3 +154,12 @@ FROM
     LATERAL jsonb_to_recordset(fd.outer_array) 
     AS record(id text, value text, label text, type text) ;
 """
+
+
+def get_all_tables_query() -> str:
+    return """
+    SELECT table_name, table_schema, table_type
+FROM information_schema.tables
+WHERE table_schema NOT IN ('information_schema', 'pg_catalog')
+ORDER BY table_schema, table_name;
+    """

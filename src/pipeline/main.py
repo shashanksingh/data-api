@@ -23,6 +23,16 @@ def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
     return response
 
 
+# source : get all tables
+get_data_from_db(sql_callback=get_submission_timeline_query).to_sql(
+    name=f"source_tables",
+    con=REPORTING_ENGINE,
+    if_exists="append",
+    method="multi",
+    schema="public",
+)
+
+
 # source : submission attribute calculator
 # df_sac_raw = get_data_from_db(sql_callback=get_submission_attributes_query)
 # df_sac_raw.drop(["submission"], axis=1, inplace=True)
