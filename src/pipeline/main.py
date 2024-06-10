@@ -24,16 +24,16 @@ def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
 
 
 # source : submission attribute calculator
-df_sac_raw = get_data_from_db(sql_callback=get_submission_attributes_query)
-df_sac_raw.drop(["submission"], axis=1, inplace=True)
-df_sac_raw.to_sql(
-    name=f"fact_precalculated_submissions",
-    con=REPORTING_ENGINE,
-    if_exists="append",
-    method="multi",
-    schema="public",
-    chunksize=100,
-)
+# df_sac_raw = get_data_from_db(sql_callback=get_submission_attributes_query)
+# df_sac_raw.drop(["submission"], axis=1, inplace=True)
+# df_sac_raw.to_sql(
+#     name=f"fact_precalculated_submissions",
+#     con=REPORTING_ENGINE,
+#     if_exists="append",
+#     method="multi",
+#     schema="public",
+#     chunksize=100,
+# )
 
 
 # source : submission timeline
@@ -109,7 +109,9 @@ for question, df in hashmap_of_question_df.items():
     )
 
     # Just in offchance we have more object struct
-    df_final = df_final.applymap(lambda x: json.dumps(x) if isinstance(x, dict) else x)
+    df_final = df_final.apply(
+        lambda col: col.apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
+    )
 
     df_final.to_sql(
         name=f"fact_{question.lower()}",
