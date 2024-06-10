@@ -1,7 +1,19 @@
+import os
 from typing import Any
 import psycopg2 as pg
 from sqlalchemy import create_engine
 from models import DBCredentials
+
+# Trino configuration
+TRANSACTIONAL_POSTGRES_USERNAME = os.environ["TRANSACTIONAL_POSTGRES_USERNAME"]
+TRANSACTIONAL_POSTGRES_HOSTNAME = os.environ["TRANSACTIONAL_POSTGRES_HOSTNAME"]
+TRANSACTIONAL_POSTGRES_PORT = os.environ["TRANSACTIONAL_POSTGRES_PORT"]
+TRANSACTIONAL_POSTGRES_PASSWORD = os.environ["TRANSACTIONAL_POSTGRES_PASSWORD"]
+REPORTING_POSTGRES_USERNAME = os.environ["REPORTING_POSTGRES_USERNAME"]
+REPORTING_POSTGRES_PASSWORD = os.environ["REPORTING_POSTGRES_PASSWORD"]
+REPORTING_POSTGRES_HOSTNAME = os.environ["REPORTING_POSTGRES_HOSTNAME"]
+REPORTING_POSTGRES_PORT = os.environ["REPORTING_POSTGRES_PORT"]
+REPORTING_POSTGRES_DATABASE = os.environ["REPORTING_POSTGRES_DATABASE"]
 
 
 def get_engine(database: str = "postgres") -> Any:
@@ -16,14 +28,6 @@ def get_engine(database: str = "postgres") -> Any:
     )
 
 
-REPORTING_DATABASE = DBCredentials(
-    username="dataapi",
-    password="dataapi",
-    host="localhost",
-    port="5433",
-    database="reporting",
-)
-
 REPORTING_ENGINE = create_engine(
-    f"postgresql+psycopg2://{REPORTING_DATABASE.username}:{REPORTING_DATABASE.password}@{REPORTING_DATABASE.host}:{REPORTING_DATABASE.port}/{REPORTING_DATABASE.database}"
+    f"postgresql+psycopg2://{REPORTING_POSTGRES_USERNAME}:{REPORTING_POSTGRES_PASSWORD}@{REPORTING_POSTGRES_HOSTNAME}:{REPORTING_POSTGRES_PORT}/{REPORTING_POSTGRES_DATABASE}"
 )
