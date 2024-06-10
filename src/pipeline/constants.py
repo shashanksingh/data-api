@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from sqlalchemy import create_engine
-from models import DBCredentials
 
 
 @dataclass
@@ -61,16 +59,3 @@ UNITS = {
     "ffa91f39-ff16-4eb2-bea5-e8875aec61d0": Unit(name="USD_UNIT", label="USD"),
     "accdfdb5-9db6-41f3-a990-c426434255fc": Unit(name="KWH_NET", label="KWh - net"),
 }
-
-REPORTING_DATABASE = DBCredentials(
-    username="dataapi", password="dataapi", host="localhost", port="5433", database="reporting"
-)
-username = REPORTING_DATABASE.username
-password = REPORTING_DATABASE.password
-host = REPORTING_DATABASE.host
-port = REPORTING_DATABASE.port
-database = REPORTING_DATABASE.database
-
-REPORTING_ENGINE = create_engine(
-    f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}"
-)

@@ -11,8 +11,8 @@ from extract.queries import (
     get_unstructured_columns_types_from_tables,
     get_submission_attributes_query,
 )
-from engine import get_engine
-from constants import UNITS, REPORTING_ENGINE
+from engine import get_engine, REPORTING_ENGINE
+from constants import UNITS
 from helper import drop_columns_if_exists, pretty_print_load_exception
 
 
@@ -133,7 +133,9 @@ for question, df in hashmap_of_question_df.items():
 # Dimension - Unit
 units_dict: Dict = {key: asdict(value) for key, value in UNITS.items()}
 df_units: pd.DataFrame = pd.DataFrame.from_dict(units_dict, orient="index")
-df_units.to_sql("dimension_units", con=REPORTING_ENGINE, if_exists="append", schema="public")
+df_units.to_sql(
+    "dimension_units", con=REPORTING_ENGINE, if_exists="append", schema="public"
+)
 
 # Dimension - Table
 for table in DIMENSIONS:
