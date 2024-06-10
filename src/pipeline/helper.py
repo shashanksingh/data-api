@@ -11,8 +11,8 @@ def drop_columns_if_exists(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame
 def pretty_print_load_exception(
     table: str, e: Exception, df: pd.DataFrame, df_normalized: pd.DataFrame
 ) -> None:
-    print("===" * 10, table, "===" * 10)
+    print("===" * 5, table, "===" * 5)
     print("[Exception][TABLE]", str(e))
     print("[DF]", df)
     print("[DF_NORMALIZED]", df_normalized)
-    print("===" * 10)
+    print("===" * 12)

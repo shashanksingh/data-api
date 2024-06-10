@@ -35,17 +35,6 @@ df_sac_raw.to_sql(
     chunksize=100,
 )
 
-# df_pivoted = pd.pivot(data=df_sac_raw, columns=["record_id"])
-# print("[Pivoted]",df_pivoted.shape)
-#
-# df_pivoted.to_sql(
-#     name=f"fact_precalculated_submissions_pivoted",
-#     con=engine,
-#     if_exists="append",
-#     method="multi",
-#     schema="public",
-#     chunksize=100,
-# )
 
 # source : submission timeline
 df_raw = get_data_from_db(sql_callback=get_submission_timeline_query)
@@ -65,7 +54,7 @@ hashmap_of_question_df = {
 
 # FACTS WITH TABLE
 for table, df in hashmap_of_table_df.items():
-    print(">>" * 10, table)
+    print(f"[Copied]{table}")
     df_normalized = pd.json_normalize(
         df["extracted_data"], record_path="table", meta=["primary_key"]
     )
@@ -94,7 +83,7 @@ for table, df in hashmap_of_table_df.items():
 
 # FACTS WITH QUESTIONS
 for question, df in hashmap_of_question_df.items():
-    print(">>" * 10, question)
+    print(f"[Copied]{question}")
     df_normalized = pd.json_normalize(df["extracted_question_data_with_id"])
     try:
         df_final = pd.merge(
