@@ -4,7 +4,7 @@ import psycopg2 as pg
 from sqlalchemy import create_engine
 from models import DBCredentials
 
-# Trino configuration
+# Postgres configuration
 TRANSACTIONAL_POSTGRES_USERNAME = os.environ["TRANSACTIONAL_POSTGRES_USERNAME"]
 TRANSACTIONAL_POSTGRES_HOSTNAME = os.environ["TRANSACTIONAL_POSTGRES_HOSTNAME"]
 TRANSACTIONAL_POSTGRES_PORT = os.environ["TRANSACTIONAL_POSTGRES_PORT"]
@@ -19,13 +19,9 @@ REPORTING_POSTGRES_DATABASE = os.environ["REPORTING_POSTGRES_DATABASE"]
 
 def get_engine(database: str = "postgres") -> Any:
     # Define the PostgreSQL database connection details
-    username = "admin"
-    password = "supersecret123"
-    host = "localhost"
-    port = "5432"
 
     return pg.connect(
-        f"dbname='{database}' user='{username}' host='{host}' port='{port}' password='{password}'"
+        f"dbname='{TRANSACTIONAL_POSTGRES_DATABASE}' user='{TRANSACTIONAL_POSTGRES_USERNAME}' host='{TRANSACTIONAL_POSTGRES_HOSTNAME}' port='{TRANSACTIONAL_POSTGRES_PORT}' password='{TRANSACTIONAL_POSTGRES_PASSWORD}'"
     )
 
 

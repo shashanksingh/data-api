@@ -4,7 +4,7 @@ from typing import List
 
 from fastapi import FastAPI, HTTPException
 import trino
-from api.models import QueryRequest
+from .models import QueryRequest
 from jinja2 import Environment, FileSystemLoader
 
 app = FastAPI()
