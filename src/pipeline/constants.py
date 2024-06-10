@@ -63,13 +63,14 @@ UNITS = {
 }
 
 REPORTING_DATABASE = DBCredentials(
-    username="dataapi", password="dataapi", host="localhost", port="5433"
+    username="dataapi", password="dataapi", host="localhost", port="5433", database="reporting"
 )
 username = REPORTING_DATABASE.username
 password = REPORTING_DATABASE.password
 host = REPORTING_DATABASE.host
 port = REPORTING_DATABASE.port
+database = REPORTING_DATABASE.database
 
 REPORTING_ENGINE = create_engine(
-    f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
+    f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}"
 )
