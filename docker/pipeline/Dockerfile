@@ -10,6 +10,4 @@ COPY ./src/pipeline /code/src/pipeline
 # Install the required packages
 RUN pip install --no-cache-dir --upgrade -r /code/src/pipeline/requirements.txt
 
-CMD ["python", "./pipeline/flatten.py"]
-
-
+CMD ["python", "/code/pipeline/main.py"]
