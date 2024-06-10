@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from sqlalchemy import create_engine
+from models import DBCredentials
 
 
 @dataclass
@@ -9,7 +11,7 @@ class Unit:
     conversion: str = None
 
 
-units = {
+UNITS = {
     "d11e91ed-3fb3-40af-91a5-514e02103866": Unit(name="KWH_UNIT", label="kWh"),
     "60799459-2fd4-4998-8b10-59066b386102": Unit(
         name="MWH_UNIT",
@@ -59,3 +61,15 @@ units = {
     "ffa91f39-ff16-4eb2-bea5-e8875aec61d0": Unit(name="USD_UNIT", label="USD"),
     "accdfdb5-9db6-41f3-a990-c426434255fc": Unit(name="KWH_NET", label="KWh - net"),
 }
+
+REPORTING_DATABASE = DBCredentials(
+    username="dataapi", password="dataapi", host="localhost", port="5433"
+)
+username = REPORTING_DATABASE.username
+password = REPORTING_DATABASE.password
+host = REPORTING_DATABASE.host
+port = REPORTING_DATABASE.port
+
+REPORTING_ENGINE = create_engine(
+    f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
+)

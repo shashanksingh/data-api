@@ -10,3 +10,12 @@ class Table:
 
     def __hash__(self):
         return hash(f"{self.schema_name}.{self.table_name}")
+
+
+@dataclass
+class DBCredentials:
+    username: str
+    password: str
+    host: str
+    port: int
+    database: str

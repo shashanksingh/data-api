@@ -1,7 +1,6 @@
 from dataclasses import asdict
 from typing import Callable, List, Dict
 import pandas as pd
-from sqlalchemy import create_engine
 import functools
 import json
 from dimension import DIMENSIONS
@@ -13,8 +12,8 @@ from extract.queries import (
     get_submission_attributes_query,
 )
 from engine import get_engine
-from constants import units
-from helper import drop_columns_if_exists
+from constants import UNITS, REPORTING_ENGINE
+from helper import drop_columns_if_exists, pretty_print_load_exception
 
 
 def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
@@ -27,17 +26,9 @@ def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
 # source : submission attribute calculator
 df_sac_raw = get_data_from_db(sql_callback=get_submission_attributes_query)
 df_sac_raw.drop(["submission"], axis=1, inplace=True)
-username = "dataapi"
-password = "dataapi"
-host = "localhost"
-port = "5433"
-
-engine = create_engine(
-    f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
-)
 df_sac_raw.to_sql(
     name=f"fact_precalculated_submissions",
-    con=engine,
+    con=REPORTING_ENGINE,
     if_exists="append",
     method="multi",
     schema="public",
@@ -82,21 +73,8 @@ for table, df in hashmap_of_table_df.items():
     try:
         df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
     except Exception as e:
-        print("===" * 10, table, "===" * 10)
-        print("[Exception][TABLE]", str(e))
-        print("[DF]", df)
-        print("[DF_NORMALIZED]", df_normalized)
-        print("===" * 10)
+        pretty_print_load_exception(table=table, exception=e, df=df, df_normalized=df)
         continue
-
-    username = "dataapi"
-    password = "dataapi"
-    host = "localhost"
-    port = "5433"
-
-    engine = create_engine(
-        f"postgresql+psycopg2://{username}:{password}@{host}:{port}/reporting"
-    )
 
     df_final.drop(
         [
@@ -108,7 +86,7 @@ for table, df in hashmap_of_table_df.items():
         axis=1,
     ).to_sql(
         name=f"fact_{table.lower()}",
-        con=engine,
+        con=REPORTING_ENGINE,
         if_exists="append",
         method="multi",
         schema="public",
@@ -157,7 +135,7 @@ for question, df in hashmap_of_question_df.items():
     )
 
 # Dimension - Unit
-units_dict: Dict = {key: asdict(value) for key, value in units.items()}
+units_dict: Dict = {key: asdict(value) for key, value in UNITS.items()}
 df_units: pd.DataFrame = pd.DataFrame.from_dict(units_dict, orient="index")
 df_units.to_sql("dimension_units", con=engine, if_exists="append", schema="public")
 
