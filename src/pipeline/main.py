@@ -73,7 +73,7 @@ for table, df in hashmap_of_table_df.items():
     try:
         df_final = pd.merge(df, df_normalized, on="primary_key", how="left")
     except Exception as e:
-        pretty_print_load_exception(table=table, exception=e, df=df, df_normalized=df)
+        pretty_print_load_exception(table=table, e=e, df=df, df_normalized=df)
         continue
 
     df_final.drop(
@@ -105,11 +105,7 @@ for question, df in hashmap_of_question_df.items():
             how="left",
         )
     except Exception as e:
-        print("===" * 10, question, "===" * 10)
-        print("[Exception][QUESTIONS]", str(e))
-        print("[DF]", df.columns)
-        print("[DF_NORMALIZED]", df_normalized.columns)
-        print("===" * 10)
+        pretty_print_load_exception(table=question, e=e, df=df, df_normalized=df)
         continue
 
     df_final = drop_columns_if_exists(
@@ -128,7 +124,7 @@ for question, df in hashmap_of_question_df.items():
 
     df_final.to_sql(
         name=f"fact_{question.lower()}",
-        con=engine,
+        con=REPORTING_ENGINE,
         if_exists="append",
         method="multi",
         schema="public",
@@ -137,7 +133,7 @@ for question, df in hashmap_of_question_df.items():
 # Dimension - Unit
 units_dict: Dict = {key: asdict(value) for key, value in UNITS.items()}
 df_units: pd.DataFrame = pd.DataFrame.from_dict(units_dict, orient="index")
-df_units.to_sql("dimension_units", con=engine, if_exists="append", schema="public")
+df_units.to_sql("dimension_units", con=REPORTING_ENGINE, if_exists="append", schema="public")
 
 # Dimension - Table
 for table in DIMENSIONS:
@@ -158,7 +154,7 @@ for table in DIMENSIONS:
 
     df_excluded.to_sql(
         name=f"dimension_{table.target_table_name.lower()}",
-        con=engine,
+        con=REPORTING_ENGINE,
         if_exists="replace",
         method="multi",
         schema=table.target_schema_name,
