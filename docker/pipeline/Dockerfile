@@ -12,3 +12,4 @@ RUN pip install --no-cache-dir --upgrade -r /code/src/pipeline/requirements.txt
 
 CMD ["python", "./pipeline/flatten.py"]
 
+
