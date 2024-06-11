@@ -113,7 +113,7 @@ services:
       REPORTING_POSTGRES_USERNAME: "dataapi"
       REPORTING_POSTGRES_PASSWORD: "dataapi"
       REPORTING_POSTGRES_HOSTNAME: "postgres"
-      REPORTING_POSTGRES_PORT: 5433
+      REPORTING_POSTGRES_PORT: 5432
       REPORTING_POSTGRES_DATABASE: "reporting"
     depends_on:
       - postgres
