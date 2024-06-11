@@ -5,8 +5,8 @@ from typing import Dict, List
 import pandas as pd
 from constants import UNITS
 from engine import REPORTING_ENGINE
-from src.pipeline.dimension import DIMENSIONS
-from src.pipeline.extract.queries import (
+from dimension import DIMENSIONS
+from extract.queries import (
     get_fullload_query,
     get_unstructured_columns_types_from_tables,
 )

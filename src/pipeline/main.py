@@ -1,4 +1,3 @@
-from typing import Callable
 import pandas as pd
 import json
 from facts import FACTS_TABLE, FACTS_QUESTIONS
@@ -7,17 +6,9 @@ from extract.queries import (
     get_all_tables_query,
     get_current_db_schema,
 )
-from engine import get_engine, REPORTING_ENGINE
-from helper import drop_columns_if_exists, pretty_print_load_exception
+from engine import REPORTING_ENGINE
+from helper import drop_columns_if_exists, pretty_print_load_exception, get_data_from_db
 from load.dimensions import load_dimension, load_dimension_table
-
-
-def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
-    print("[get_data_from_db] Get Data")
-    response = pd.read_sql(sql=sql_callback(), con=get_engine(), chunksize=100)
-    print("[get_data_from_db] Data Recieved From DB", response.shape)
-    return response
-
 
 # source : get all tables
 get_data_from_db(sql_callback=get_all_tables_query).to_sql(
@@ -35,7 +26,6 @@ get_data_from_db(sql_callback=get_current_db_schema).to_sql(
     method="multi",
     schema="public",
 )
-
 
 # source : submission attribute calculator
 # df_sac_raw = get_data_from_db(sql_callback=get_submission_attributes_query)
@@ -134,7 +124,6 @@ for question, df in hashmap_of_question_df.items():
         method="multi",
         schema="public",
     )
-
 
 load_dimension()
 load_dimension_table()

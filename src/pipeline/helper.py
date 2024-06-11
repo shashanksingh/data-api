@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Callable
 import pandas as pd
 from datetime import datetime
 
@@ -16,3 +16,10 @@ def pretty_print_load_exception(
     print("[DF]", df)
     print("[DF_NORMALIZED]", df_normalized)
     print("===" * 12)
+
+
+def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
+    print("[get_data_from_db] Get Data")
+    response = pd.read_sql(sql=sql_callback(), con=get_engine(), chunksize=100)
+    print("[get_data_from_db] Data Recieved From DB", response.shape)
+    return response
