@@ -19,3 +19,11 @@ class DBCredentials:
     host: str
     port: int
     database: str
+
+
+@dataclass
+class Unit:
+    name: str
+    label: str
+    convert_to: str = None
+    conversion: str = None

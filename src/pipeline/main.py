@@ -1,26 +1,20 @@
-from dataclasses import asdict
-from typing import Callable, List, Dict
+from typing import Callable
 import pandas as pd
-import functools
 import json
-from dimension import DIMENSIONS
 from facts import FACTS_TABLE, FACTS_QUESTIONS
 from extract.queries import (
     get_submission_timeline_query,
-    get_fullload_query,
-    get_unstructured_columns_types_from_tables,
-    get_submission_attributes_query,
     get_all_tables_query,
     get_current_db_schema,
 )
 from engine import get_engine, REPORTING_ENGINE
-from constants import UNITS
 from helper import drop_columns_if_exists, pretty_print_load_exception
+from load.dimensions import load_dimension, load_dimension_table
 
 
 def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
     print("[get_data_from_db] Get Data")
-    response = pd.read_sql(sql=sql_callback(), con=get_engine())
+    response = pd.read_sql(sql=sql_callback(), con=get_engine(), chunksize=100)
     print("[get_data_from_db] Data Recieved From DB", response.shape)
     return response
 
@@ -29,7 +23,7 @@ def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
 get_data_from_db(sql_callback=get_all_tables_query).to_sql(
     name=f"source_tables",
     con=REPORTING_ENGINE,
-    if_exists="append",
+    if_exists="replace",
     method="multi",
     schema="public",
 )
@@ -37,7 +31,7 @@ get_data_from_db(sql_callback=get_all_tables_query).to_sql(
 get_data_from_db(sql_callback=get_current_db_schema).to_sql(
     name=f"source_database",
     con=REPORTING_ENGINE,
-    if_exists="append",
+    if_exists="replace",
     method="multi",
     schema="public",
 )
@@ -49,7 +43,7 @@ get_data_from_db(sql_callback=get_current_db_schema).to_sql(
 # df_sac_raw.to_sql(
 #     name=f"fact_precalculated_submissions",
 #     con=REPORTING_ENGINE,
-#     if_exists="append",
+#     if_exists="replace",
 #     method="multi",
 #     schema="public",
 #     chunksize=100,
@@ -96,7 +90,7 @@ for table, df in hashmap_of_table_df.items():
     ).to_sql(
         name=f"fact_{table.lower()}",
         con=REPORTING_ENGINE,
-        if_exists="append",
+        if_exists="replace",
         method="multi",
         schema="public",
     )
@@ -136,41 +130,11 @@ for question, df in hashmap_of_question_df.items():
     df_final.to_sql(
         name=f"fact_{question.lower()}",
         con=REPORTING_ENGINE,
-        if_exists="append",
+        if_exists="replace",
         method="multi",
         schema="public",
     )
 
-# Dimension - Unit
-units_dict: Dict = {key: asdict(value) for key, value in UNITS.items()}
-df_units: pd.DataFrame = pd.DataFrame.from_dict(units_dict, orient="index")
-df_units.to_sql(
-    "dimension_units", con=REPORTING_ENGINE, if_exists="append", schema="public"
-)
 
-# Dimension - Table
-for table in DIMENSIONS:
-    partial_callback = functools.partial(
-        get_fullload_query, table=f"{table.schema_name}.{table.table_name}"
-    )
-
-    df_raw: pd.DataFrame = get_data_from_db(sql_callback=partial_callback)
-
-    normalize_columns: List = get_unstructured_columns_types_from_tables(
-        table_name=table.table_name
-    )
-    for column in normalize_columns:
-        df_normalized = pd.json_normalize(df_raw[column]).drop("id", axis=1)
-        df_raw = pd.concat([df_raw, df_normalized], axis=1)
-
-    df_excluded = df_raw.loc[:, ~df_raw.columns.isin(normalize_columns)]
-
-    df_excluded.to_sql(
-        name=f"dimension_{table.target_table_name.lower()}",
-        con=REPORTING_ENGINE,
-        if_exists="replace",
-        method="multi",
-        schema=table.target_schema_name,
-        index=False,
-        chunksize=500,
-    )
+load_dimension()
+load_dimension_table()

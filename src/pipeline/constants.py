@@ -1,13 +1,5 @@
 from dataclasses import dataclass
-
-
-@dataclass
-class Unit:
-    name: str
-    label: str
-    convert_to: str = None
-    conversion: str = None
-
+from models import Unit
 
 UNITS = {
     "d11e91ed-3fb3-40af-91a5-514e02103866": Unit(name="KWH_UNIT", label="kWh"),
