@@ -11,6 +11,7 @@ from extract.queries import (
     get_unstructured_columns_types_from_tables,
     get_submission_attributes_query,
     get_all_tables_query,
+    get_current_db_schema,
 )
 from engine import get_engine, REPORTING_ENGINE
 from constants import UNITS
@@ -27,6 +28,14 @@ def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
 # source : get all tables
 get_data_from_db(sql_callback=get_all_tables_query).to_sql(
     name=f"source_tables",
+    con=REPORTING_ENGINE,
+    if_exists="append",
+    method="multi",
+    schema="public",
+)
+
+get_data_from_db(sql_callback=get_current_db_schema).to_sql(
+    name=f"source_database",
     con=REPORTING_ENGINE,
     if_exists="append",
     method="multi",
