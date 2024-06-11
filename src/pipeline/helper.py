@@ -1,6 +1,7 @@
-from typing import List, Any, Callable
+from typing import List, Callable
 import pandas as pd
 from datetime import datetime
+from engine import get_engine, REPORTING_ENGINE
 
 
 def drop_columns_if_exists(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
@@ -23,3 +24,7 @@ def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
     response = pd.read_sql(sql=sql_callback(), con=get_engine(), chunksize=100)
     print("[get_data_from_db] Data Recieved From DB", response.shape)
     return response
+
+
+def write_to_table(table: str, df: pd.DataFrame) -> None:
+    df.to_sql(table, con=REPORTING_ENGINE, if_exists="replace", schema="public")

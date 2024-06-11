@@ -10,16 +10,14 @@ from extract.queries import (
     get_fullload_query,
     get_unstructured_columns_types_from_tables,
 )
-from src.pipeline.main import get_data_from_db
+from helper import get_data_from_db, write_to_table
 
 
 # Dimension - Unit
 def load_dimension() -> None:
     units_dict: Dict = {key: asdict(value) for key, value in UNITS.items()}
     df_units: pd.DataFrame = pd.DataFrame.from_dict(units_dict, orient="index")
-    df_units.to_sql(
-        "dimension_units", con=REPORTING_ENGINE, if_exists="replace", schema="public"
-    )
+    write_to_table(df=df_units, table="dimension_units")
 
 
 # Dimension - Table
