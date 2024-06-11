@@ -26,5 +26,11 @@ def get_data_from_db(sql_callback: Callable) -> pd.DataFrame:
     return response
 
 
-def write_to_table(table: str, df: pd.DataFrame) -> None:
-    df.to_sql(table, con=REPORTING_ENGINE, if_exists="replace", schema="public")
+def write_to_table(table: str, df: pd.DataFrame, chunksize=100) -> None:
+    df.to_sql(
+        table,
+        con=REPORTING_ENGINE,
+        if_exists="replace",
+        schema="public",
+        chunksize=chunksize,
+    )

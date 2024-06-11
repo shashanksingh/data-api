@@ -7,25 +7,22 @@ from extract.queries import (
     get_current_db_schema,
 )
 from engine import REPORTING_ENGINE
-from helper import drop_columns_if_exists, pretty_print_load_exception, get_data_from_db
+from helper import (
+    drop_columns_if_exists,
+    pretty_print_load_exception,
+    get_data_from_db,
+    write_to_table,
+)
 from load.dimensions import load_dimension, load_dimension_table
 
 # source : get all tables
-get_data_from_db(sql_callback=get_all_tables_query).to_sql(
-    name=f"source_tables",
-    con=REPORTING_ENGINE,
-    if_exists="replace",
-    method="multi",
-    schema="public",
+write_to_table(
+    df=get_data_from_db(sql_callback=get_all_tables_query), table=f"source_tables"
+)
+write_to_table(
+    df=get_data_from_db(sql_callback=get_current_db_schema), table=f"source_database"
 )
 
-get_data_from_db(sql_callback=get_current_db_schema).to_sql(
-    name=f"source_database",
-    con=REPORTING_ENGINE,
-    if_exists="replace",
-    method="multi",
-    schema="public",
-)
 
 # source : submission attribute calculator
 # df_sac_raw = get_data_from_db(sql_callback=get_submission_attributes_query)
