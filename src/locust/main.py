@@ -8,14 +8,8 @@ class MyUser(HttpUser):
     def query_fuel_api(self):
         """Query Fuel API"""
         url = "/v1/query"
-        payload = {
-            "query": "get_all_fuel",
-            "params": {"limit": "3"}
-        }
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "insomnia/9.2.0"
-        }
+        payload = {"query": "get_all_fuel", "params": {"limit": "3"}}
+        headers = {"Content-Type": "application/json", "User-Agent": "insomnia/9.2.0"}
         self.client.post(url, json=payload, headers=headers)
 
     @task
@@ -25,8 +19,5 @@ class MyUser(HttpUser):
         payload = {
             "query": "get_all_submission",
         }
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "insomnia/9.2.0"
-        }
+        headers = {"Content-Type": "application/json", "User-Agent": "insomnia/9.2.0"}
         self.client.post(url, json=payload, headers=headers)

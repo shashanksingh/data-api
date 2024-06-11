@@ -27,11 +27,17 @@ def get_trino_connection():
 env = Environment(loader=FileSystemLoader("./api/templates"))
 
 
-async def get_result_for_query(query: QueryRequest, trino_connection: trino.dbapi.Connection) -> List[str]:
+async def get_result_for_query(
+    query: QueryRequest, trino_connection: trino.dbapi.Connection
+) -> List[str]:
     # trino_connection=get_trino_connection()
     cursor = trino_connection.cursor()
     template = env.get_template(f"{query.query}.sql.jinja")
-    query = template.render(context=query.params) if hasattr(query, 'params') else template.render()
+    query = (
+        template.render(context=query.params)
+        if hasattr(query, "params")
+        else template.render()
+    )
     cursor.execute(query)
     return cursor.fetchall()
 
@@ -55,7 +61,10 @@ async def execute_query(requests: List[QueryRequest]):
     conn = get_trino_connection()
     cursor = conn.cursor()
 
-    tasks = [get_result_for_query(query=request, trino_connection=conn) for request in requests]
+    tasks = [
+        get_result_for_query(query=request, trino_connection=conn)
+        for request in requests
+    ]
     results = await asyncio.gather(*tasks)
 
     cursor.close()
