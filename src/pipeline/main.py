@@ -74,13 +74,9 @@ for table, df in hashmap_of_table_df.items():
             "extracted_question_data_with_id",
         ],
         axis=1,
-    ).to_sql(
-        name=f"fact_{table.lower()}",
-        con=REPORTING_ENGINE,
-        if_exists="replace",
-        method="multi",
-        schema="public",
     )
+    write_to_table(df=df_final, table=f"fact_{table.lower()}")
+
 
 # FACTS WITH QUESTIONS
 for question, df in hashmap_of_question_df.items():
@@ -114,13 +110,8 @@ for question, df in hashmap_of_question_df.items():
         lambda col: col.apply(lambda x: json.dumps(x) if isinstance(x, dict) else x)
     )
 
-    df_final.to_sql(
-        name=f"fact_{question.lower()}",
-        con=REPORTING_ENGINE,
-        if_exists="replace",
-        method="multi",
-        schema="public",
-    )
+    write_to_table(df=df_final, table=f"fact_{question.lower()}")
+
 
 load_dimension()
 load_dimension_table()
